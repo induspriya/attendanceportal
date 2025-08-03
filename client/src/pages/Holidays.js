@@ -101,7 +101,9 @@ const Holidays = () => {
   };
 
   const getFirstDayOfMonth = (year, month) => {
-    return new Date(year, month, 1).getDay();
+    const day = new Date(year, month, 1).getDay();
+    // Convert Sunday=0 to Monday=0 format
+    return day === 0 ? 6 : day - 1;
   };
 
   const getHolidayForDate = (date) => {
@@ -262,7 +264,7 @@ const Holidays = () => {
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1">
             {/* Day Headers */}
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
               <div key={day} className="p-2 text-center text-sm font-medium text-gray-500 bg-gray-50 rounded">
                 {day}
               </div>
