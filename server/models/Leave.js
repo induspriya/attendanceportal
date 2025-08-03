@@ -16,7 +16,20 @@ const leaveSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['sick', 'casual', 'annual', 'maternity', 'paternity', 'other'],
+    enum: [
+      'sick', 
+      'casual', 
+      'annual', 
+      'maternity', 
+      'paternity', 
+      'bereavement',
+      'compensatory',
+      'sabbatical',
+      'unpaid',
+      'work-from-home',
+      'half-day',
+      'other'
+    ],
     required: true
   },
   reason: {

@@ -16,7 +16,18 @@ const holidaySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['national', 'company', 'optional'],
+    enum: [
+      'national', 
+      'company', 
+      'optional', 
+      'gazetted', 
+      'restricted', 
+      'sunday', 
+      'saturday', 
+      'religious',
+      'cultural',
+      'regional'
+    ],
     default: 'national'
   },
   isActive: {
