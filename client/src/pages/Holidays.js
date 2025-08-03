@@ -114,6 +114,11 @@ const Holidays = () => {
     });
   };
 
+  const getDayName = (date) => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return dayNames[date.getDay()];
+  };
+
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentYear, currentMonth);
     const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
@@ -129,6 +134,11 @@ const Holidays = () => {
       const date = new Date(currentYear, currentMonth, i);
       const holiday = getHolidayForDate(date);
       days.push({ date, holiday, dayNumber: i });
+    }
+
+    // Ensure we have exactly 42 cells (6 rows × 7 columns) for consistent layout
+    while (days.length < 42) {
+      days.push(null);
     }
 
     return days;
@@ -282,6 +292,9 @@ const Holidays = () => {
                   <>
                     <div className="text-sm font-medium text-gray-900 mb-1">
                       {day.dayNumber}
+                    </div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      {getDayName(day.date).substring(0, 3)}
                     </div>
                     {day.holiday && (
                       <div
