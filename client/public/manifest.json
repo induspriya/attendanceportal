@@ -1,0 +1,21 @@
+{
+  "short_name": "Attendance Portal",
+  "name": "Attendance Portal - Employee Management System",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "description": "A comprehensive attendance management system for tracking employee attendance, leave management, and company announcements.",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "prefer_related_applications": false
+} 
