@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Calendar, TrendingUp, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -11,11 +11,7 @@ const Attendance = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  useEffect(() => {
-    fetchAttendanceData();
-  }, [selectedMonth, selectedYear]);
-
-  const fetchAttendanceData = async () => {
+  const fetchAttendanceData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/attendance/me?month=${selectedMonth}&year=${selectedYear}`);
@@ -26,7 +22,11 @@ const Attendance = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [fetchAttendanceData]);
 
   const getStatusIcon = (status) => {
     switch (status) {

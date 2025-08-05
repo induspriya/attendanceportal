@@ -146,8 +146,10 @@ router.get('/requests', adminAuth, async (req, res) => {
     }
 
     const leaves = await Leave.find(query)
-      .populate('user', 'name email department position')
-      .populate('approvedBy', 'name')
+      .populate('user', 'name email department position manager')
+      .populate('managerApproval.approvedBy', 'name')
+      .populate('hrApproval.approvedBy', 'name')
+      .populate('finalApprovedBy', 'name')
       .sort({ createdAt: -1 });
 
     // Filter by department if provided
@@ -163,8 +165,201 @@ router.get('/requests', adminAuth, async (req, res) => {
   }
 });
 
-// @route   POST /api/leaves/approve/:id (Admin only)
-// @desc    Approve or reject leave request
+// @route   GET /api/leaves/pending-manager (Manager only)
+// @desc    Get pending leave requests for manager approval
+// @access  Private (Manager)
+router.get('/pending-manager', auth, async (req, res) => {
+  try {
+    // Find users who have this user as their manager
+    const managedUsers = await User.find({ manager: req.user._id }).select('_id');
+    const managedUserIds = managedUsers.map(user => user._id);
+
+    const leaves = await Leave.find({
+      user: { $in: managedUserIds },
+      'managerApproval.status': 'pending'
+    })
+      .populate('user', 'name email department position')
+      .populate('managerApproval.approvedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(leaves);
+  } catch (error) {
+    console.error('Get pending manager approvals error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/leaves/pending-hr (HR only)
+// @desc    Get pending leave requests for HR approval
+// @access  Private (HR)
+router.get('/pending-hr', auth, async (req, res) => {
+  try {
+    // Check if user is HR or admin
+    if (req.user.role !== 'hr' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Only HR can view pending HR approvals.' });
+    }
+
+    const leaves = await Leave.find({
+      'hrApproval.status': 'pending',
+      'managerApproval.status': 'approved'
+    })
+      .populate('user', 'name email department position')
+      .populate('managerApproval.approvedBy', 'name')
+      .populate('hrApproval.approvedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(leaves);
+  } catch (error) {
+    console.error('Get pending HR approvals error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/leaves/manager-approve/:id (Manager only)
+// @desc    Manager approval for leave request
+// @access  Private (Manager)
+router.post('/manager-approve/:id', [
+  body('status').isIn(['approved', 'rejected']).withMessage('Status must be approved or rejected'),
+  body('rejectionReason').optional().trim(),
+  body('comments').optional().trim()
+], auth, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { status, rejectionReason, comments } = req.body;
+    const leaveId = req.params.id;
+
+    const leave = await Leave.findById(leaveId)
+      .populate('user', 'name email department manager')
+      .populate('managerApproval.approvedBy', 'name');
+
+    if (!leave) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    // Check if user is the manager of the leave requester
+    if (leave.user.manager?.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Only the assigned manager can approve this request.' });
+    }
+
+    if (leave.managerApproval.status !== 'pending') {
+      return res.status(400).json({ message: 'Manager approval has already been processed' });
+    }
+
+    // Update manager approval
+    leave.managerApproval.status = status;
+    leave.managerApproval.approvedBy = req.user._id;
+    leave.managerApproval.approvedAt = new Date();
+    leave.managerApproval.comments = comments;
+
+    if (status === 'rejected' && rejectionReason) {
+      leave.managerApproval.rejectionReason = rejectionReason;
+      leave.status = 'manager_rejected';
+    } else if (status === 'approved') {
+      leave.status = 'manager_approved';
+    }
+
+    await leave.save();
+
+    res.json({
+      message: `Manager ${status} the leave request`,
+      leave: {
+        id: leave._id,
+        user: leave.user,
+        from: leave.from,
+        to: leave.to,
+        type: leave.type,
+        status: leave.status,
+        managerApproval: leave.managerApproval
+      }
+    });
+  } catch (error) {
+    console.error('Manager approve leave error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/leaves/hr-approve/:id (HR only)
+// @desc    HR approval for leave request
+// @access  Private (HR)
+router.post('/hr-approve/:id', [
+  body('status').isIn(['approved', 'rejected']).withMessage('Status must be approved or rejected'),
+  body('rejectionReason').optional().trim(),
+  body('comments').optional().trim()
+], auth, async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { status, rejectionReason, comments } = req.body;
+    const leaveId = req.params.id;
+
+    const leave = await Leave.findById(leaveId)
+      .populate('user', 'name email department')
+      .populate('hrApproval.approvedBy', 'name');
+
+    if (!leave) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    // Check if user is HR or admin
+    if (req.user.role !== 'hr' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Only HR can approve this request.' });
+    }
+
+    if (leave.hrApproval.status !== 'pending') {
+      return res.status(400).json({ message: 'HR approval has already been processed' });
+    }
+
+    // Check if manager has approved first
+    if (leave.managerApproval.status !== 'approved') {
+      return res.status(400).json({ message: 'Manager approval is required before HR approval' });
+    }
+
+    // Update HR approval
+    leave.hrApproval.status = status;
+    leave.hrApproval.approvedBy = req.user._id;
+    leave.hrApproval.approvedAt = new Date();
+    leave.hrApproval.comments = comments;
+
+    if (status === 'rejected' && rejectionReason) {
+      leave.hrApproval.rejectionReason = rejectionReason;
+      leave.status = 'hr_rejected';
+    } else if (status === 'approved') {
+      leave.status = 'approved';
+      leave.finalApprovedBy = req.user._id;
+      leave.finalApprovedAt = new Date();
+    }
+
+    await leave.save();
+
+    res.json({
+      message: `HR ${status} the leave request`,
+      leave: {
+        id: leave._id,
+        user: leave.user,
+        from: leave.from,
+        to: leave.to,
+        type: leave.type,
+        status: leave.status,
+        hrApproval: leave.hrApproval,
+        finalApprovedBy: leave.finalApprovedBy,
+        finalApprovedAt: leave.finalApprovedAt
+      }
+    });
+  } catch (error) {
+    console.error('HR approve leave error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/leaves/approve/:id (Admin only - Legacy support)
+// @desc    Admin can approve/reject any leave request directly
 // @access  Private (Admin)
 router.post('/approve/:id', [
   body('status').isIn(['approved', 'rejected']).withMessage('Status must be approved or rejected'),
@@ -184,23 +379,26 @@ router.post('/approve/:id', [
       return res.status(404).json({ message: 'Leave request not found' });
     }
 
-    if (leave.status !== 'pending') {
-      return res.status(400).json({ message: 'Leave request has already been processed' });
-    }
-
-    // Update leave status
+    // Admin can approve/reject regardless of current status
     leave.status = status;
-    leave.approvedBy = req.user._id;
-    leave.approvedAt = new Date();
+    leave.finalApprovedBy = req.user._id;
+    leave.finalApprovedAt = new Date();
 
-    if (status === 'rejected' && rejectionReason) {
+    if (status === 'approved') {
+      leave.managerApproval.status = 'approved';
+      leave.managerApproval.approvedBy = req.user._id;
+      leave.managerApproval.approvedAt = new Date();
+      leave.hrApproval.status = 'approved';
+      leave.hrApproval.approvedBy = req.user._id;
+      leave.hrApproval.approvedAt = new Date();
+    } else if (status === 'rejected' && rejectionReason) {
       leave.rejectionReason = rejectionReason;
     }
 
     await leave.save();
 
     res.json({
-      message: `Leave request ${status} successfully`,
+      message: `Leave request ${status} successfully by admin`,
       leave: {
         id: leave._id,
         user: leave.user,
@@ -208,13 +406,13 @@ router.post('/approve/:id', [
         to: leave.to,
         type: leave.type,
         status: leave.status,
-        approvedBy: req.user.name,
-        approvedAt: leave.approvedAt,
+        finalApprovedBy: req.user.name,
+        finalApprovedAt: leave.finalApprovedAt,
         rejectionReason: leave.rejectionReason
       }
     });
   } catch (error) {
-    console.error('Approve leave error:', error);
+    console.error('Admin approve leave error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

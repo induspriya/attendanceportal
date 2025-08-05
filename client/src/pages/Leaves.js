@@ -63,6 +63,14 @@ const Leaves = () => {
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'rejected':
         return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'manager_approved':
+        return <CheckCircle className="h-4 w-4 text-blue-500" />;
+      case 'hr_approved':
+        return <CheckCircle className="h-4 w-4 text-purple-500" />;
+      case 'manager_rejected':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'hr_rejected':
+        return <XCircle className="h-4 w-4 text-red-500" />;
       case 'pending':
         return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       default:
@@ -76,10 +84,39 @@ const Leaves = () => {
         return 'bg-green-50 border-green-200 text-green-800';
       case 'rejected':
         return 'bg-red-50 border-red-200 text-red-800';
+      case 'manager_approved':
+        return 'bg-blue-50 border-blue-200 text-blue-800';
+      case 'hr_approved':
+        return 'bg-purple-50 border-purple-200 text-purple-800';
+      case 'manager_rejected':
+        return 'bg-red-50 border-red-200 text-red-800';
+      case 'hr_rejected':
+        return 'bg-red-50 border-red-200 text-red-800';
       case 'pending':
         return 'bg-yellow-50 border-yellow-200 text-yellow-800';
       default:
         return 'bg-gray-50 border-gray-200 text-gray-800';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'Approved';
+      case 'rejected':
+        return 'Rejected';
+      case 'manager_approved':
+        return 'Manager Approved';
+      case 'hr_approved':
+        return 'HR Approved';
+      case 'manager_rejected':
+        return 'Manager Rejected';
+      case 'hr_rejected':
+        return 'HR Rejected';
+      case 'pending':
+        return 'Pending';
+      default:
+        return status;
     }
   };
 
@@ -193,9 +230,20 @@ const Leaves = () => {
                         <div className="flex items-center">
                           {getStatusIcon(leave.status)}
                           <span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(leave.status)}`}>
-                            {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
+                            {getStatusLabel(leave.status)}
                           </span>
                         </div>
+                        {/* Show approval workflow details */}
+                        {leave.managerApproval && (
+                          <div className="mt-1 text-xs text-gray-500">
+                            <div>Manager: {leave.managerApproval.status === 'pending' ? 'Pending' : 
+                              leave.managerApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}</div>
+                            {leave.hrApproval && (
+                              <div>HR: {leave.hrApproval.status === 'pending' ? 'Pending' : 
+                                leave.hrApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}</div>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {leave.reason}

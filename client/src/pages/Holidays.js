@@ -7,13 +7,13 @@ const Holidays = () => {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
 
   useEffect(() => {
     fetchHolidays();
-  }, [currentYear]);
+  }, []);
 
   const fetchHolidays = async () => {
     try {
@@ -95,15 +95,14 @@ const Holidays = () => {
     }
   };
 
-  // Calendar generation functions
+  // Calendar functions
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
   };
 
   const getFirstDayOfMonth = (year, month) => {
     const day = new Date(year, month, 1).getDay();
-    // Convert Sunday=0 to Monday=0 format
-    return day === 0 ? 6 : day - 1;
+    return day;
   };
 
   const getHolidayForDate = (date) => {
@@ -112,11 +111,6 @@ const Holidays = () => {
       const holidayDate = new Date(holiday.date).toISOString().split('T')[0];
       return holidayDate === dateString;
     });
-  };
-
-  const getDayName = (date) => {
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return dayNames[date.getDay()];
   };
 
   const generateCalendarDays = () => {
@@ -167,6 +161,8 @@ const Holidays = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+
+
   const filteredHolidays = holidays.filter(holiday => {
     if (filter === 'all') return true;
     return holiday.type === filter;
@@ -203,7 +199,7 @@ const Holidays = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Holiday Calendar</h1>
+          <h1 className="text-2xl font-bold text-black">Holidays</h1>
           <p className="text-gray-600">View all company holidays and important dates</p>
         </div>
         <div className="flex items-center space-x-4">
@@ -243,7 +239,7 @@ const Holidays = () => {
         >
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-black">
               {monthNames[currentMonth]} {currentYear}
             </h3>
             <div className="flex items-center space-x-2">
@@ -271,40 +267,41 @@ const Holidays = () => {
             </div>
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {/* Day Headers */}
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-gray-500 bg-gray-50 rounded">
-                {day}
-              </div>
-            ))}
-
-            {/* Calendar Days */}
-            {generateCalendarDays().map((day, index) => (
+          {/* Vertical Calendar with Place Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {generateCalendarDays().filter(day => day).map((day, index) => (
               <div
                 key={index}
-                className={`min-h-[80px] p-2 border border-gray-200 relative ${
-                  day ? 'bg-white' : 'bg-gray-50'
-                }`}
+                className="p-4 border border-gray-200 rounded-lg bg-white hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                {day && (
-                  <>
-                    <div className="text-sm font-medium text-gray-900 mb-1">
-                      {day.dayNumber}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-2xl font-bold text-black">
+                    {day.dayNumber}
+                  </div>
+                  <div className="text-sm text-gray-500 font-medium">
+                    {new Date(day.date).toLocaleDateString('en-US', { 
+                      weekday: 'short',
+                      month: 'short'
+                    })}
+                  </div>
+                </div>
+                
+                {day.holiday ? (
+                  <div className="space-y-2">
+                    <div
+                      className={`text-sm p-3 rounded-lg text-white font-medium ${getHolidayTypeColor(day.holiday.type)}`}
+                      title={day.holiday.name}
+                    >
+                      {day.holiday.name}
                     </div>
-                    <div className="text-xs text-gray-500 mb-1">
-                      {getDayName(day.date).substring(0, 3)}
+                    <div className="text-xs text-gray-600">
+                      {day.holiday.description || 'Holiday'}
                     </div>
-                    {day.holiday && (
-                      <div
-                        className={`text-xs p-1 rounded text-white font-medium truncate ${getHolidayTypeColor(day.holiday.type)}`}
-                        title={day.holiday.name}
-                      >
-                        {day.holiday.name}
-                      </div>
-                    )}
-                  </>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400 italic">
+                    Regular work day
+                  </div>
                 )}
               </div>
             ))}
@@ -312,7 +309,7 @@ const Holidays = () => {
 
           {/* Legend */}
           <div className="mt-6 pt-4 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Holiday Types</h4>
+            <h4 className="text-sm font-medium text-black mb-3">Holiday Types</h4>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
               {holidayTypes.map((type) => (
                 <div key={type.value} className="flex items-center space-x-2">
@@ -339,7 +336,7 @@ const Holidays = () => {
         >
           <div className="flex items-center space-x-2 mb-4">
             <Filter className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-medium text-gray-900">Filter Holidays</h3>
+            <h3 className="text-lg font-medium text-black">Filter Holidays</h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {holidayTypes.map((type) => (
@@ -367,7 +364,7 @@ const Holidays = () => {
           transition={{ delay: 0.2 }}
           className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
         >
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Upcoming Holidays</h3>
+        <h3 className="text-lg font-medium text-black mb-4">Upcoming Holidays</h3>
         <div className="space-y-3">
           {upcomingHolidays.length > 0 ? (
             upcomingHolidays.map((holiday) => (
@@ -378,7 +375,7 @@ const Holidays = () => {
                 <div className="flex items-center space-x-3">
                   {getHolidayTypeIcon(holiday.type)}
                   <div>
-                    <h4 className="font-medium text-gray-900">{holiday.name}</h4>
+                    <h4 className="font-medium text-black">{holiday.name}</h4>
                     <p className="text-sm text-gray-600">
                       {new Date(holiday.date).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -403,13 +400,13 @@ const Holidays = () => {
 
       {/* All Holidays - Only show in list view */}
       {viewMode === 'list' && (
-      <motion.div
+        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
       >
-        <h3 className="text-lg font-medium text-gray-900 mb-4">All Holidays</h3>
+        <h3 className="text-lg font-medium text-black mb-4">All Holidays</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

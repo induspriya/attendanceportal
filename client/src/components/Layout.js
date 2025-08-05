@@ -30,6 +30,14 @@ const Layout = () => {
     { name: 'News', href: '/news', icon: FileText },
   ];
 
+  const managerNavigation = [
+    { name: 'Manager Approvals', href: '/manager/leaves', icon: Calendar },
+  ];
+
+  const hrNavigation = [
+    { name: 'HR Approvals', href: '/hr/leaves', icon: Calendar },
+  ];
+
   const adminNavigation = [
     { name: 'Admin Dashboard', href: '/admin', icon: Settings },
     { name: 'Users', href: '/admin/users', icon: Users },
@@ -129,6 +137,56 @@ const Layout = () => {
                 {item.name}
               </motion.a>
             ))}
+            {(user?.role === 'manager' || user?.role === 'admin') && (
+              <>
+                <div className="pt-4 pb-2">
+                  <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Manager
+                  </h3>
+                </div>
+                {managerNavigation.map((item) => (
+                  <motion.a
+                    key={item.name}
+                    href={item.href}
+                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                      isActive(item.href)
+                        ? 'bg-primary-100 text-primary-900'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </motion.a>
+                ))}
+              </>
+            )}
+            {(user?.role === 'hr' || user?.role === 'admin') && (
+              <>
+                <div className="pt-4 pb-2">
+                  <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    HR
+                  </h3>
+                </div>
+                {hrNavigation.map((item) => (
+                  <motion.a
+                    key={item.name}
+                    href={item.href}
+                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                      isActive(item.href)
+                        ? 'bg-primary-100 text-primary-900'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </motion.a>
+                ))}
+              </>
+            )}
             {user?.role === 'admin' && (
               <>
                 <div className="pt-4 pb-2">

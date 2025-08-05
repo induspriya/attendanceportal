@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'employee'],
+    enum: ['admin', 'hr', 'manager', 'employee'],
     default: 'employee'
   },
   department: {
@@ -33,6 +33,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     default: 'Employee'
+  },
+  manager: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isHR: {
+    type: Boolean,
+    default: false
   },
   phone: {
     type: String,

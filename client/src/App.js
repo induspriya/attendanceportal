@@ -19,6 +19,8 @@ import AdminUsers from './pages/AdminUsers';
 import AdminLeaves from './pages/AdminLeaves';
 import AdminHolidays from './pages/AdminHolidays';
 import AdminNews from './pages/AdminNews';
+import ManagerLeaves from './pages/ManagerLeaves';
+import HRLeaves from './pages/HRLeaves';
 
 // Components
 import Layout from './components/Layout';
@@ -60,7 +62,7 @@ const PublicRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true }}>
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
@@ -98,6 +100,12 @@ function AppRoutes() {
           <Route path="leaves" element={<Leaves />} />
           <Route path="holidays" element={<Holidays />} />
           <Route path="news" element={<News />} />
+          
+          {/* Manager Routes */}
+          <Route path="manager/leaves" element={<ManagerLeaves />} />
+          
+          {/* HR Routes */}
+          <Route path="hr/leaves" element={<HRLeaves />} />
           
           {/* Admin Routes */}
           <Route path="admin" element={

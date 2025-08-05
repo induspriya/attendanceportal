@@ -39,14 +39,58 @@ const leaveSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
+    enum: ['pending', 'manager_approved', 'hr_approved', 'approved', 'manager_rejected', 'hr_rejected', 'rejected'],
     default: 'pending'
   },
-  approvedBy: {
+  managerApproval: {
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    approvedAt: {
+      type: Date
+    },
+    rejectionReason: {
+      type: String,
+      trim: true
+    },
+    comments: {
+      type: String,
+      trim: true
+    }
+  },
+  hrApproval: {
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    approvedAt: {
+      type: Date
+    },
+    rejectionReason: {
+      type: String,
+      trim: true
+    },
+    comments: {
+      type: String,
+      trim: true
+    }
+  },
+  finalApprovedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  approvedAt: {
+  finalApprovedAt: {
     type: Date
   },
   rejectionReason: {

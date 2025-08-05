@@ -7,7 +7,6 @@ import {
   XCircle, 
   AlertCircle,
   TrendingUp,
-  User,
   CalendarDays
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
