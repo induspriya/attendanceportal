@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm install && npm run build",
+  "name": "attendance-portal",
+  "buildCommand": "npm run build:client",
   "outputDirectory": "client/build",
-  "installCommand": "npm install && cd client && npm install && cd ../server && npm install",
-  "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
+  "installCommand": "npm run install-all",
+  "functions": {
+    "server/index.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
