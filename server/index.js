@@ -47,7 +47,20 @@ app.use('/api/news', newsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Attendance Portal API is running' });
+  try {
+    res.json({ 
+      status: 'OK', 
+      message: 'Attendance Portal API is running',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Health check failed',
+      error: error.message 
+    });
+  }
 });
 
 // Root endpoint for testing
@@ -62,13 +75,23 @@ app.get('/api', (req, res) => {
 
 // Environment check endpoint
 app.get('/api/env', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Environment check',
-    nodeEnv: process.env.NODE_ENV,
-    port: process.env.PORT,
-    hasMongoUri: !!process.env.MONGODB_URI
-  });
+  try {
+    res.json({ 
+      status: 'OK', 
+      message: 'Environment check',
+      nodeEnv: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 5000,
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Environment check failed',
+      error: error.message 
+    });
+  }
 });
 
 // Test database connection endpoint
