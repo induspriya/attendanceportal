@@ -42,6 +42,7 @@ const Holidays = () => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const getHolidayTypeColor = (type) => {
     switch (type) {
       case 'gazetted':
