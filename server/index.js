@@ -60,6 +60,17 @@ app.get('/api', (req, res) => {
   res.json({ status: 'OK', message: 'API is accessible' });
 });
 
+// Environment check endpoint
+app.get('/api/env', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Environment check',
+    nodeEnv: process.env.NODE_ENV,
+    port: process.env.PORT,
+    hasMongoUri: !!process.env.MONGODB_URI
+  });
+});
+
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
   try {
