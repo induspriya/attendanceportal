@@ -50,6 +50,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Attendance Portal API is running' });
 });
 
+// Root endpoint for testing
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
+
+// API root endpoint
+app.get('/api', (req, res) => {
+  res.json({ status: 'OK', message: 'API is accessible' });
+});
+
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {
   try {
