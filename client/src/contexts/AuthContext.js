@@ -19,6 +19,16 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios defaults
   useEffect(() => {
+    // Set base URL for API calls - use relative URLs for production
+    // This will automatically use the same domain as the frontend
+    if (process.env.NODE_ENV === 'production') {
+      // In production, use relative URLs so it works with any deployment URL
+      axios.defaults.baseURL = '';
+    } else {
+      // In development, use localhost
+      axios.defaults.baseURL = 'http://localhost:5001';
+    }
+    
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {

@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Filter, CalendarDays, Clock, Star, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Filter, CalendarDays, Clock, Star, Building } from 'lucide-react';
 import axios from 'axios';
 
 const Holidays = () => {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+
 
   useEffect(() => {
     fetchHolidays();
@@ -95,71 +93,7 @@ const Holidays = () => {
     }
   };
 
-  // Calendar functions
-  const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
 
-  const getFirstDayOfMonth = (year, month) => {
-    const day = new Date(year, month, 1).getDay();
-    return day;
-  };
-
-  const getHolidayForDate = (date) => {
-    const dateString = date.toISOString().split('T')[0];
-    return holidays.find(holiday => {
-      const holidayDate = new Date(holiday.date).toISOString().split('T')[0];
-      return holidayDate === dateString;
-    });
-  };
-
-  const generateCalendarDays = () => {
-    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-    const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
-    const days = [];
-
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
-    }
-
-    // Add days of the month
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(currentYear, currentMonth, i);
-      const holiday = getHolidayForDate(date);
-      days.push({ date, holiday, dayNumber: i });
-    }
-
-    // Ensure we have exactly 42 cells (6 rows × 7 columns) for consistent layout
-    while (days.length < 42) {
-      days.push(null);
-    }
-
-    return days;
-  };
-
-  const navigateMonth = (direction) => {
-    if (direction === 'prev') {
-      if (currentMonth === 0) {
-        setCurrentMonth(11);
-        setCurrentYear(currentYear - 1);
-      } else {
-        setCurrentMonth(currentMonth - 1);
-      }
-    } else {
-      if (currentMonth === 11) {
-        setCurrentMonth(0);
-        setCurrentYear(currentYear + 1);
-      } else {
-        setCurrentMonth(currentMonth + 1);
-      }
-    }
-  };
-
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
 
 
 
@@ -203,131 +137,14 @@ const Holidays = () => {
           <p className="text-gray-600">View all company holidays and important dates</p>
         </div>
         <div className="flex items-center space-x-4">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'calendar'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Calendar View
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              List View
-            </button>
-          </div>
           <Calendar className="h-8 w-8 text-blue-600" />
         </div>
       </motion.div>
 
-      {/* Calendar View */}
-      {viewMode === 'calendar' && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-        >
-          {/* Calendar Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-black">
-              {monthNames[currentMonth]} {currentYear}
-            </h3>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => navigateMonth('prev')}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <ChevronLeft className="h-5 w-5 text-gray-600" />
-              </button>
-              <button
-                onClick={() => {
-                  setCurrentMonth(new Date().getMonth());
-                  setCurrentYear(new Date().getFullYear());
-                }}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Today
-              </button>
-              <button
-                onClick={() => navigateMonth('next')}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <ChevronRight className="h-5 w-5 text-gray-600" />
-              </button>
-            </div>
-          </div>
 
-          {/* Vertical Calendar with Place Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {generateCalendarDays().filter(day => day).map((day, index) => (
-              <div
-                key={index}
-                className="p-4 border border-gray-200 rounded-lg bg-white hover:shadow-lg transition-all duration-200 transform hover:scale-105"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-2xl font-bold text-black">
-                    {day.dayNumber}
-                  </div>
-                  <div className="text-sm text-gray-500 font-medium">
-                    {new Date(day.date).toLocaleDateString('en-US', { 
-                      weekday: 'short',
-                      month: 'short'
-                    })}
-                  </div>
-                </div>
-                
-                {day.holiday ? (
-                  <div className="space-y-2">
-                    <div
-                      className={`text-sm p-3 rounded-lg text-white font-medium ${getHolidayTypeColor(day.holiday.type)}`}
-                      title={day.holiday.name}
-                    >
-                      {day.holiday.name}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {day.holiday.description || 'Holiday'}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-400 italic">
-                    Regular work day
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
 
-          {/* Legend */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-black mb-3">Holiday Types</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-              {holidayTypes.map((type) => (
-                <div key={type.value} className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${type.value === 'gazetted' ? 'bg-red-500' : 
-                    type.value === 'restricted' ? 'bg-orange-500' : 
-                    type.value === 'company' ? 'bg-blue-500' : 
-                    type.value === 'optional' ? 'bg-purple-500' : 
-                    type.value === 'sunday' ? 'bg-gray-500' : 'bg-gray-400'}`}></div>
-                  <span className="text-xs text-gray-600">{type.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Filter Tabs - Only show in list view */}
-      {viewMode === 'list' && (
+      {/* Filter Tabs */}
+      {(
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -356,8 +173,8 @@ const Holidays = () => {
         </motion.div>
       )}
 
-      {/* Upcoming Holidays - Only show in list view */}
-      {viewMode === 'list' && (
+      {/* Upcoming Holidays */}
+      {(
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -398,8 +215,8 @@ const Holidays = () => {
         </motion.div>
       )}
 
-      {/* All Holidays - Only show in list view */}
-      {viewMode === 'list' && (
+      {/* All Holidays */}
+      {(
         <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

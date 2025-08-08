@@ -18,9 +18,17 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-vercel-domain.vercel.app', 'https://attendance-portal.vercel.app']
+    ? [
+        'https://attendance-portal-kmfkmwmma-induspriyas-projects.vercel.app',
+        'https://attendance-portal.vercel.app',
+        'https://attendance-portal-4g3lquqet-induspriyas-projects.vercel.app',
+        'https://attendance-portal-ebco5ecs6-induspriyas-projects.vercel.app',
+        /^https:\/\/attendance-portal-.*-induspriyas-projects\.vercel\.app$/
+      ]
     : ['http://localhost:3000'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,6 +48,33 @@ app.use('/api/news', newsRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Attendance Portal API is running' });
+});
+
+// Test database connection endpoint
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    const states = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    };
+    
+    res.json({ 
+      status: 'OK', 
+      message: 'Database connection test',
+      dbState: states[dbState],
+      dbStateCode: dbState
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Database test failed',
+      error: error.message 
+    });
+  }
 });
 
 // Error handling middleware
