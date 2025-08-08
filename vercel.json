@@ -1,14 +1,18 @@
 {
   "version": 2,
-  "name": "attendance-portal",
-  "buildCommand": "npm run build:client",
-  "outputDirectory": "client/build",
-  "installCommand": "npm run install-all",
-  "functions": {
-    "server/index.js": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
@@ -18,5 +22,8 @@
       "src": "/(.*)",
       "dest": "/client/build/index.html"
     }
-  ]
+  ],
+  "env": {
+    "FORCE_REBUILD": "true"
+  }
 } 
