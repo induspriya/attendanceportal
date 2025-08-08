@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "echo 'No build step required for Node.js server'"
+    "build": "echo 'No build step required for Node.js server'",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "dependencies": {
     "express": "^4.18.2",
