@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Clock, Tag, User, AlertCircle, Info, Calendar } from 'lucide-react';
-import axios from 'axios';
+import { getAllNews } from '../../api/news';
 
 const News = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedNews, setSelectedNews] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('all');
 
   useEffect(() => {
     fetchNews();
@@ -16,8 +18,8 @@ const News = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/news/');
-      setNews(response.data.news || response.data);
+      const response = await getAllNews();
+      setNews(response.news || response);
     } catch (error) {
       console.error('Error fetching news:', error);
     } finally {
@@ -94,8 +96,25 @@ const News = () => {
   };
 
   const filteredNews = news.filter(item => {
-    if (filter === 'all') return true;
-    return item.category === filter;
+    // Category filter
+    if (filter !== 'all' && item.category !== filter) return false;
+    
+    // Priority filter
+    if (priorityFilter !== 'all' && item.priority !== priorityFilter) return false;
+    
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        item.title.toLowerCase().includes(searchLower) ||
+        item.summary?.toLowerCase().includes(searchLower) ||
+        item.content.toLowerCase().includes(searchLower) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+      
+      if (!matchesSearch) return false;
+    }
+    
+    return true;
   });
 
   const categories = [
@@ -129,7 +148,7 @@ const News = () => {
         <FileText className="h-8 w-8 text-blue-600" />
       </motion.div>
 
-      {/* Filter Tabs */}
+      {/* Search and Filter Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -138,33 +157,91 @@ const News = () => {
       >
         <div className="flex items-center space-x-2 mb-4">
           <Tag className="h-5 w-5 text-gray-500" />
-          <h3 className="text-lg font-medium text-black">Filter News</h3>
+          <h3 className="text-lg font-medium text-black">Search & Filter News</h3>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
-            <button
-              key={category.value}
-              onClick={() => setFilter(category.value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                filter === category.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {category.label} ({category.count})
-            </button>
-          ))}
+        
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search news by title, content, or tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Category and Priority Filters */}
+        <div className="space-y-3">
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Categories</h4>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category.value}
+                  onClick={() => setFilter(category.value)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    filter === category.value
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category.label} ({category.count})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Priority</h4>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'all', label: 'All Priorities', count: news.length },
+                { value: 'urgent', label: 'Urgent', count: news.filter(n => n.priority === 'urgent').length },
+                { value: 'high', label: 'High', count: news.filter(n => n.priority === 'high').length },
+                { value: 'medium', label: 'Medium', count: news.filter(n => n.priority === 'medium').length },
+                { value: 'low', label: 'Low', count: news.filter(n => n.priority === 'low').length },
+              ].map((priority) => (
+                <button
+                  key={priority.value}
+                  onClick={() => setPriorityFilter(priority.value)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    priorityFilter === priority.value
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {priority.label} ({priority.count})
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Results Count */}
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            Showing {filteredNews.length} of {news.length} news items
+          </p>
         </div>
       </motion.div>
 
       {/* News Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {filteredNews.map((item) => (
+      {filteredNews.length > 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {filteredNews.map((item) => (
           <motion.div
             key={item._id}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -220,7 +297,37 @@ const News = () => {
             )}
           </motion.div>
         ))}
-      </motion.div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-center py-12"
+        >
+          <div className="max-w-md mx-auto">
+            <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No news found</h3>
+            <p className="text-gray-500 mb-4">
+              {searchTerm || filter !== 'all' || priorityFilter !== 'all'
+                ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                : 'There are no news items available at the moment.'}
+            </p>
+            {(searchTerm || filter !== 'all' || priorityFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilter('all');
+                  setPriorityFilter('all');
+                }}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       {/* News Detail Modal */}
       {selectedNews && (

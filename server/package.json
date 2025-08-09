@@ -7,7 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "build": "echo 'No build step required for Node.js server'",
-    "vercel-build": "echo 'Vercel build completed'"
+    "vercel-build": "echo 'Vercel build completed'",
+    "seed:news": "node utils/seedNews.js"
   },
   "dependencies": {
     "express": "^4.18.2",

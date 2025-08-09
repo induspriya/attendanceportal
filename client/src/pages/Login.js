@@ -59,9 +59,21 @@ const Login = () => {
 
     setLoading(true);
     try {
+      console.log('Attempting login with:', formData);
       const result = await login(formData.email, formData.password);
+      console.log('Login result:', result);
+      
       if (result.success) {
-        navigate('/dashboard');
+        console.log('Login successful, navigating to dashboard...');
+        try {
+          navigate('/dashboard');
+          console.log('React Router navigation attempted');
+        } catch (navError) {
+          console.error('Navigation error, using fallback:', navError);
+          window.location.href = '/dashboard';
+        }
+      } else {
+        console.log('Login failed:', result.error);
       }
     } catch (error) {
       console.error('Login error:', error);

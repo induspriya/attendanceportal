@@ -41,12 +41,19 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       if (token) {
         try {
+          console.log('Checking authentication with token:', token);
           const response = await axios.get('/api/auth/me');
+          console.log('Auth check response:', response.data);
           setUser(response.data.user);
         } catch (error) {
           console.error('Auth check failed:', error);
-          logout();
+          // Only logout if it's an authentication error, not a network error
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            logout();
+          }
         }
+      } else {
+        console.log('No token found, user not authenticated');
       }
       setLoading(false);
     };
@@ -56,16 +63,22 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('AuthContext: Making login request...');
       const response = await axios.post('/api/auth/login', { email, password });
+      console.log('AuthContext: Login response:', response.data);
+      
       const { token: newToken, user: userData } = response.data;
       
+      console.log('AuthContext: Setting token and user...');
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
       
+      console.log('AuthContext: Login successful, user state updated');
       toast.success('Login successful!');
       return { success: true };
     } catch (error) {
+      console.error('AuthContext: Login error:', error);
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
       return { success: false, error: message };

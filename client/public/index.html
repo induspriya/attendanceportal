@@ -2,34 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/logo.svg" type="image/svg+xml" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#2563eb" />
-    <meta
-      name="description"
-      content="Attendance Portal - A comprehensive attendance management system"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.svg" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta name="description" content="Attendance Portal - A comprehensive attendance management system" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.json" />
     <title>Attendance Portal - REACT APP</title>
     <meta name="app-type" content="react-app" />
+    <script defer src="/static/js/bundle.js"></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
-      // Register service worker for PWA functionality
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
+      // Temporarily disabled service worker for Safari compatibility testing
+      // if ('serviceWorker' in navigator) {
+      //   window.addEventListener('load', () => {
+      //     navigator.serviceWorker.register('/sw.js')
+      //       .then((registration) => {
+      //         console.log('SW registered: ', registration);
+      //       })
+      //       .catch((registrationError) => {
+      //         console.log('SW registration failed: ', registrationError);
+      //       });
+      //   });
+      // }
     </script>
   </body>
 </html> 

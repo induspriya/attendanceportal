@@ -30,18 +30,24 @@ import LoadingSpinner from './components/LoadingSpinner';
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute: user =', user, 'loading =', loading);
+
   if (loading) {
+    console.log('ProtectedRoute: Still loading...');
     return <LoadingSpinner />;
   }
 
   if (!user) {
+    console.log('ProtectedRoute: No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   if (adminOnly && user.role !== 'admin') {
+    console.log('ProtectedRoute: User not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('ProtectedRoute: Access granted');
   return children;
 };
 
