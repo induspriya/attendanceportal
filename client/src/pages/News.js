@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Clock, Tag, User, AlertCircle, Info, Calendar } from 'lucide-react';
-import { getAllNews } from '../../api/news';
+import { getAllNews } from '../api/news';
 
 const News = () => {
   const [news, setNews] = useState([]);
