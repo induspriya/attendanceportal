@@ -110,6 +110,61 @@ const sampleNews = [
     priority: 'high',
     tags: ['success', 'project', 'client', 'achievement'],
     expiresAt: new Date('2025-12-31')
+  },
+  // NEW RECENT NEWS ITEMS
+  {
+    title: 'Attendance Portal News System - Now Live! 🎉',
+    content: 'Exciting news! Our new News & Announcement system is now live in the Attendance Portal. This system provides real-time updates, company announcements, policy changes, and event information all in one place.\n\nNew Features:\n• Real-time news updates\n• Category-based organization\n• Priority-based filtering\n• Search functionality\n• Mobile-responsive design\n• Admin management panel\n\nAccess the news system at /news and stay updated with all company information!',
+    summary: 'New News & Announcement system is now live! Access real-time updates and company information.',
+    category: 'announcement',
+    priority: 'urgent',
+    tags: ['news-system', 'portal', 'announcements', 'live'],
+    expiresAt: new Date('2025-12-31')
+  },
+  {
+    title: 'Remote Work Policy Update - Hybrid Model Implementation',
+    content: 'Starting next month, we will implement a new hybrid work model that combines office and remote work. This policy aims to provide flexibility while maintaining team collaboration and productivity.\n\nNew Policy Details:\n• 3 days office, 2 days remote per week\n• Flexible office hours (9 AM - 5 PM core)\n• Required office days: Tuesday, Wednesday, Thursday\n• Remote days: Monday and Friday\n• Team collaboration days: Wednesday (mandatory office)\n\nAll employees must update their work preferences in the portal by next week.',
+    summary: 'New hybrid work model: 3 days office, 2 days remote. Update preferences in portal by next week.',
+    category: 'policy',
+    priority: 'high',
+    tags: ['remote-work', 'hybrid', 'policy', 'flexibility'],
+    expiresAt: new Date('2025-06-30')
+  },
+  {
+    title: 'Monthly All-Hands Meeting - This Friday',
+    content: 'Join us for our monthly All-Hands meeting this Friday at 2:00 PM. This session will cover company updates, Q1 achievements, upcoming projects, and open Q&A with leadership.\n\nMeeting Agenda:\n• Company performance review\n• Q1 achievements celebration\n• Upcoming Q2 projects\n• New initiatives announcement\n• Open Q&A session\n• Team recognition\n\nLocation: Main Conference Room + Virtual (Zoom link will be shared)\nPlease RSVP and submit any questions in advance.',
+    summary: 'Monthly All-Hands meeting this Friday at 2 PM. Company updates, Q1 review, and open Q&A session.',
+    category: 'event',
+    priority: 'medium',
+    tags: ['all-hands', 'meeting', 'company-update', 'Q1-review'],
+    expiresAt: new Date('2025-02-15')
+  },
+  {
+    title: 'Cybersecurity Awareness Training - Mandatory for All',
+    content: 'Cybersecurity training is now mandatory for all employees. This training covers phishing awareness, password security, data protection, and safe internet practices.\n\nTraining Requirements:\n• Complete within 2 weeks\n• 30-minute online module\n• Quiz completion required\n• Certificate of completion\n• Annual renewal required\n\nAccess the training through the employee portal. This is critical for protecting company and client data.',
+    summary: 'Mandatory cybersecurity training for all employees. Complete within 2 weeks to protect company data.',
+    category: 'policy',
+    priority: 'urgent',
+    tags: ['cybersecurity', 'training', 'mandatory', 'data-protection'],
+    expiresAt: new Date('2025-02-28')
+  },
+  {
+    title: 'Employee Recognition Program - Nominate Your Colleagues',
+    content: 'Our quarterly employee recognition program is now open for nominations. Recognize colleagues who have demonstrated exceptional performance, teamwork, innovation, or leadership.\n\nNomination Categories:\n• Outstanding Performance\n• Team Player of the Quarter\n• Innovation Award\n• Leadership Excellence\n• Customer Service Champion\n\nSubmit nominations through the portal by month-end. Winners will be announced at the next All-Hands meeting.',
+    summary: 'Quarterly employee recognition program open for nominations. Submit by month-end for various categories.',
+    category: 'announcement',
+    priority: 'medium',
+    tags: ['recognition', 'awards', 'nominations', 'quarterly'],
+    expiresAt: new Date('2025-02-28')
+  },
+  {
+    title: 'New Coffee Corner - Now Open in Building A',
+    content: 'Great news for coffee lovers! Our new coffee corner is now open in Building A, featuring premium coffee, tea, and snacks. This space serves as both a refreshment area and informal meeting spot.\n\nCoffee Corner Features:\n• Premium coffee and tea selection\n• Healthy snack options\n• Informal meeting space\n• Comfortable seating\n• Open 8 AM - 6 PM\n\nCome by and enjoy the new space! Perfect for quick meetings and coffee breaks.',
+    summary: 'New coffee corner now open in Building A! Premium coffee, tea, and informal meeting space available.',
+    category: 'news',
+    priority: 'low',
+    tags: ['coffee-corner', 'facilities', 'refreshments', 'meeting-space'],
+    expiresAt: new Date('2025-12-31')
   }
 ];
 
