@@ -75,41 +75,14 @@ const Dashboard = () => {
       
       if (holidaysRes.error) {
         console.warn('Holidays API failed:', holidaysRes.error.message);
-        // Set fallback holidays
-        setUpcomingHolidays([
-          {
-            _id: '1',
-            name: 'New Year\'s Day',
-            date: '2024-01-01',
-            type: 'public'
-          },
-          {
-            _id: '2',
-            name: 'Republic Day',
-            date: '2024-01-26',
-            type: 'public'
-          },
-          {
-            _id: '3',
-            name: 'Independence Day',
-            date: '2024-08-15',
-            type: 'public'
-          }
-        ]);
+        setUpcomingHolidays([]);
       } else {
         setUpcomingHolidays(holidaysRes.data);
       }
       
       if (newsRes.error) {
         console.warn('News API failed:', newsRes.error.message);
-        setLatestNews([
-          {
-            _id: '1',
-            title: 'Welcome to the Attendance Portal',
-            content: 'This is a sample news item. The news API is currently unavailable.',
-            createdAt: new Date().toISOString()
-          }
-        ]);
+        setLatestNews([]);
       } else {
         setLatestNews(newsRes.data || newsRes);
       }
@@ -129,22 +102,8 @@ const Dashboard = () => {
         checkInTime: null,
         checkOutTime: null
       });
-      setUpcomingHolidays([
-        {
-          _id: '1',
-          name: 'New Year\'s Day',
-          date: '2024-01-01',
-          type: 'public'
-        }
-      ]);
-      setLatestNews([
-        {
-          _id: '1',
-          title: 'Dashboard Loaded',
-          content: 'Dashboard is running in fallback mode due to API issues.',
-          createdAt: new Date().toISOString()
-        }
-      ]);
+      setUpcomingHolidays([]);
+      setLatestNews([]);
     } finally {
       setLoading(false);
     }
