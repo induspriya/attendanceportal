@@ -3,8 +3,8 @@ import axios from 'axios';
 // Create axios instance with base URL pointing to backend
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://your-backend-domain.com' // Update this with your production backend URL
-    : 'http://localhost:5001',
+    ? 'https://attendance-portal-5gh2wpldx-induspriyas-projects.vercel.app/api' // Vercel deployment URL
+    : 'http://localhost:5001/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -13,15 +13,15 @@ const api = axios.create({
 
 // List of public endpoints that don't require authentication
 const publicEndpoints = [
-  '/api/holidays',
-  '/api/holidays/upcoming',
-  '/api/news/latest',
-  '/api/news',
-  '/api/auth/login',
-  '/api/auth/signup',
-  '/api/auth/forgot-password',
-  '/api/auth/reset-password',
-  '/api/health'
+  '/holidays',
+  '/holidays/upcoming',
+  '/news/latest',
+  '/news',
+  '/auth/login',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/health'
 ];
 
 // Request interceptor to add auth token only for protected endpoints

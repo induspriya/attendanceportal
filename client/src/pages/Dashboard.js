@@ -38,18 +38,16 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Try to fetch data with individual error handling for each API call
-      const promises = [
+      // Fetch data in parallel
+      const [attendanceData, todayData, holidaysData, newsData] = await Promise.all([
         api.get('/attendance/me').catch(err => ({ data: null, error: err })),
         api.get('/attendance/today').catch(err => ({ data: null, error: err })),
-        api.get('/api/holidays/upcoming').catch(err => ({ data: null, error: err })),
-        api.get('/api/news/latest?limit=3').catch(err => ({ data: null, error: err }))
-      ];
-
-      const results = await Promise.all(promises);
+        api.get('/holidays/upcoming').catch(err => ({ data: null, error: err })),
+        api.get('/news/latest?limit=3').catch(err => ({ data: null, error: err }))
+      ]);
       
       // Handle each result individually
-      const [attendanceRes, todayRes, holidaysRes, newsRes] = results;
+      const [attendanceRes, todayRes, holidaysRes, newsRes] = [attendanceData, todayData, holidaysData, newsData];
       
       if (attendanceRes.error) {
         console.warn('Attendance API failed:', attendanceRes.error.message);

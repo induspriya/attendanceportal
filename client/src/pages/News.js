@@ -19,7 +19,7 @@ const News = () => {
     try {
       setLoading(true);
       console.log('🔍 Fetching news...');
-      const response = await api.get('/api/news');
+      const response = await api.get('/news');
       console.log('📡 API Response:', response);
       console.log('📊 Response data:', response.data);
       const newsData = response.data.news || response.data;

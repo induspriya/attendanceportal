@@ -28,7 +28,7 @@ const AdminNews = () => {
     try {
       setLoading(true);
       console.log('🔍 Admin: Fetching news...');
-      const response = await api.get('/api/news');
+      const response = await api.get('/news');
       console.log('📡 Admin API Response:', response);
       console.log('📊 Admin Response data:', response.data);
       const newsData = response.data.news || response.data;
@@ -59,9 +59,9 @@ const AdminNews = () => {
       };
 
       if (editingNews) {
-        await api.put(`/api/news/${editingNews._id}`, newsData);
+        await api.put(`/news/${editingNews._id}`, newsData);
       } else {
-        await api.post('/api/news/add', newsData);
+        await api.post('/news/add', newsData);
       }
 
       setShowForm(false);
@@ -98,7 +98,7 @@ const AdminNews = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this news item?')) {
       try {
-        await api.delete(`/api/news/${id}`);
+        await api.delete(`/news/${id}`);
         fetchNews();
       } catch (error) {
         console.error('Error deleting news:', error);

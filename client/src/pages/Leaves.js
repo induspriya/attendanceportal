@@ -41,7 +41,7 @@ const Leaves = () => {
     try {
       console.log('Fetching holidays...');
       setHolidaysLoading(true);
-      const response = await api.get('/api/holidays/upcoming');
+      const response = await api.get('/holidays/upcoming');
       console.log('Holidays response:', response.data);
       setHolidays(response.data);
     } catch (error) {

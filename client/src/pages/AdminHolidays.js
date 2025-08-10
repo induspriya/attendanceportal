@@ -15,7 +15,7 @@ const AdminHolidays = () => {
   const fetchHolidays = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/holidays');
+      const response = await api.get('/holidays');
       setHolidays(response.data);
     } catch (error) {
       console.error('Error fetching holidays:', error);
