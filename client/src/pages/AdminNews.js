@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Plus, Edit, Trash2, Filter, Eye, Calendar, User, X } from 'lucide-react';
-import { getAllNews, addNews, updateNews, deleteNews } from '../api/news';
+import api from '../api/axios';
 
 const AdminNews = () => {
   const [news, setNews] = useState([]);
@@ -27,10 +27,15 @@ const AdminNews = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const response = await getAllNews();
-      setNews(response.news || response);
+      console.log('🔍 Admin: Fetching news...');
+      const response = await api.get('/api/news');
+      console.log('📡 Admin API Response:', response);
+      console.log('📊 Admin Response data:', response.data);
+      const newsData = response.data.news || response.data;
+      console.log('📝 Admin Setting news data:', newsData);
+      setNews(newsData);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error('❌ Admin Error fetching news:', error);
     } finally {
       setLoading(false);
     }
@@ -54,9 +59,9 @@ const AdminNews = () => {
       };
 
       if (editingNews) {
-        await updateNews(editingNews._id, newsData);
+        await api.put(`/api/news/${editingNews._id}`, newsData);
       } else {
-        await addNews(newsData);
+        await api.post('/api/news/add', newsData);
       }
 
       setShowForm(false);
@@ -93,7 +98,7 @@ const AdminNews = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this news item?')) {
       try {
-        await deleteNews(id);
+        await api.delete(`/api/news/${id}`);
         fetchNews();
       } catch (error) {
         console.error('Error deleting news:', error);
@@ -188,6 +193,14 @@ const AdminNews = () => {
     return item.category === filter;
   });
 
+  // Debug logging for admin
+  console.log('📋 Admin News state:', { 
+    newsLength: news.length, 
+    filteredLength: filteredNews.length, 
+    loading, 
+    filter 
+  });
+
   const categories = [
     { value: 'all', label: 'All News', count: news.length },
     { value: 'announcement', label: 'Announcements', count: news.filter(n => n.category === 'announcement').length },
@@ -265,6 +278,14 @@ const AdminNews = () => {
       >
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-black">All News & Announcements</h3>
+          {/* Debug Info */}
+          <div className="mt-2 p-2 bg-yellow-100 rounded text-xs text-yellow-800 border border-yellow-300">
+            <p><strong>Admin Debug:</strong></p>
+            <p>News array length: {news.length}</p>
+            <p>Filtered news length: {filteredNews.length}</p>
+            <p>Loading: {loading.toString()}</p>
+            <p>Filter: {filter}</p>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

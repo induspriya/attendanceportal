@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Plus, Edit, Trash2, Filter } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 
 const AdminHolidays = () => {
   const [holidays, setHolidays] = useState([]);
@@ -15,7 +15,7 @@ const AdminHolidays = () => {
   const fetchHolidays = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/holidays/');
+      const response = await api.get('/api/holidays');
       setHolidays(response.data);
     } catch (error) {
       console.error('Error fetching holidays:', error);

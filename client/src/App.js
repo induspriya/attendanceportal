@@ -21,6 +21,9 @@ import AdminHolidays from './pages/AdminHolidays';
 import AdminNews from './pages/AdminNews';
 import ManagerLeaves from './pages/ManagerLeaves';
 import HRLeaves from './pages/HRLeaves';
+import HR from './pages/HR';
+import Administration from './pages/Administration';
+import Policies from './pages/Policies';
 
 // Components
 import Layout from './components/Layout';
@@ -30,7 +33,11 @@ import LoadingSpinner from './components/LoadingSpinner';
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
 
-  console.log('ProtectedRoute: user =', user, 'loading =', loading);
+  console.log('=== PROTECTED ROUTE CHECK ===');
+  console.log('ProtectedRoute: user =', user);
+  console.log('ProtectedRoute: loading =', loading);
+  console.log('ProtectedRoute: adminOnly =', adminOnly);
+  console.log('ProtectedRoute: user?.role =', user?.role);
 
   if (loading) {
     console.log('ProtectedRoute: Still loading...');
@@ -47,7 +54,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  console.log('ProtectedRoute: Access granted');
+  console.log('ProtectedRoute: Access granted, rendering children');
   return children;
 };
 
@@ -55,14 +62,21 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
+  console.log('=== PUBLIC ROUTE CHECK ===');
+  console.log('PublicRoute: user =', user);
+  console.log('PublicRoute: loading =', loading);
+
   if (loading) {
+    console.log('PublicRoute: Still loading...');
     return <LoadingSpinner />;
   }
 
   if (user) {
+    console.log('PublicRoute: User already logged in, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('PublicRoute: No user, rendering login/signup');
   return children;
 };
 
@@ -93,54 +107,133 @@ function AppRoutes() {
         } />
 
         {/* Protected Routes */}
-        <Route path="/" element={
+        <Route path="/dashboard" element={
           <ProtectedRoute>
-            <Layout />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </ProtectedRoute>
-        }>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          
-          {/* Employee Routes */}
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="leaves" element={<Leaves />} />
-          <Route path="holidays" element={<Holidays />} />
-          <Route path="news" element={<News />} />
-          
-          {/* Manager Routes */}
-          <Route path="manager/leaves" element={<ManagerLeaves />} />
-          
-          {/* HR Routes */}
-          <Route path="hr/leaves" element={<HRLeaves />} />
-          
-          {/* Admin Routes */}
-          <Route path="admin" element={
-            <ProtectedRoute adminOnly>
+        } />
+        
+        <Route path="/attendance" element={
+          <ProtectedRoute>
+            <Layout>
+              <Attendance />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/leaves" element={
+          <ProtectedRoute>
+            <Layout>
+              <Leaves />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/holidays" element={
+          <Layout>
+            <Holidays />
+          </Layout>
+        } />
+        
+        <Route path="/news" element={
+          <Layout>
+            <News />
+          </Layout>
+        } />
+        
+        <Route path="/policies" element={
+          <Layout>
+            <Policies />
+          </Layout>
+        } />
+        
+        {/* Manager Routes */}
+        <Route path="/manager/leaves" element={
+          <ProtectedRoute>
+            <Layout>
+              <ManagerLeaves />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* HR Routes */}
+        <Route path="/hr/leaves" element={
+          <ProtectedRoute>
+            <Layout>
+              <HRLeaves />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/hr" element={
+          <ProtectedRoute>
+            <Layout>
+              <HR />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Test HR Route */}
+        <Route path="/test-hr" element={
+          <Layout>
+            <HR />
+          </Layout>
+        } />
+        
+        <Route path="/administration" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <Administration />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
               <AdminDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="admin/users" element={
-            <ProtectedRoute adminOnly>
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/users" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
               <AdminUsers />
-            </ProtectedRoute>
-          } />
-          <Route path="admin/leaves" element={
-            <ProtectedRoute adminOnly>
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/leaves" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
               <AdminLeaves />
-            </ProtectedRoute>
-          } />
-          <Route path="admin/holidays" element={
-            <ProtectedRoute adminOnly>
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/holidays" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
               <AdminHolidays />
-            </ProtectedRoute>
-          } />
-          <Route path="admin/news" element={
-            <ProtectedRoute adminOnly>
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin/news" element={
+          <ProtectedRoute adminOnly>
+            <Layout>
               <AdminNews />
-            </ProtectedRoute>
-          } />
-        </Route>
+            </Layout>
+          </ProtectedRoute>
+        } />
 
+        {/* Root redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        
         {/* 404 Route */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

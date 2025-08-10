@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, AlertCircle, FileText, Home, Heart, Baby, User, Coffee, Briefcase, CalendarDays } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 
 const ManagerLeaves = () => {
   const [pendingLeaves, setPendingLeaves] = useState([]);
@@ -35,7 +35,7 @@ const ManagerLeaves = () => {
   const fetchPendingLeaves = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/leaves/pending-manager');
+      const response = await api.get('/leaves/pending-manager');
       setPendingLeaves(response.data);
     } catch (error) {
       console.error('Error fetching pending leaves:', error);
@@ -56,7 +56,7 @@ const ManagerLeaves = () => {
         payload.rejectionReason = approvalData.rejectionReason;
       }
 
-      await axios.post(`/api/leaves/${endpoint}/${leaveId}`, payload);
+      await api.post(`/leaves/${endpoint}/${leaveId}`, payload);
       setSelectedLeave(null);
       setApprovalData({ status: 'approved', comments: '', rejectionReason: '' });
       fetchPendingLeaves();

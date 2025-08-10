@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Plus, Clock, CheckCircle, XCircle, AlertCircle, FileText, Home, Heart, Baby, User, Coffee, Briefcase, CalendarDays } from 'lucide-react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Plus, Clock, CheckCircle, XCircle, AlertCircle, FileText, Home, Heart, Baby, User, Coffee, Gift, Building, Info } from 'lucide-react';
+import api from '../api/axios';
 
 const Leaves = () => {
   const [leaves, setLeaves] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [holidaysLoading, setHolidaysLoading] = useState(true);
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [formData, setFormData] = useState({
     from: '',
@@ -15,40 +17,136 @@ const Leaves = () => {
   });
 
   const leaveTypes = [
-    { value: 'sick', label: 'Sick Leave', icon: <Heart className="h-4 w-4" />, color: 'text-red-600', bgColor: 'bg-red-50' },
-    { value: 'casual', label: 'Casual Leave', icon: <Coffee className="h-4 w-4" />, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    { value: 'annual', label: 'Annual Leave', icon: <Calendar className="h-4 w-4" />, color: 'text-green-600', bgColor: 'bg-green-50' },
-    { value: 'maternity', label: 'Maternity Leave', icon: <Baby className="h-4 w-4" />, color: 'text-pink-600', bgColor: 'bg-pink-50' },
-    { value: 'paternity', label: 'Paternity Leave', icon: <User className="h-4 w-4" />, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-    { value: 'bereavement', label: 'Bereavement Leave', icon: <Heart className="h-4 w-4" />, color: 'text-gray-600', bgColor: 'bg-gray-50' },
-    { value: 'compensatory', label: 'Compensatory Leave', icon: <Clock className="h-4 w-4" />, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-    { value: 'sabbatical', label: 'Sabbatical Leave', icon: <Briefcase className="h-4 w-4" />, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    { value: 'unpaid', label: 'Unpaid Leave', icon: <FileText className="h-4 w-4" />, color: 'text-orange-600', bgColor: 'bg-orange-50' },
-    { value: 'work-from-home', label: 'Work from Home', icon: <Home className="h-4 w-4" />, color: 'text-teal-600', bgColor: 'bg-teal-50' },
-    { value: 'half-day', label: 'Half Day', icon: <Clock className="h-4 w-4" />, color: 'text-cyan-600', bgColor: 'bg-cyan-50' },
-    { value: 'other', label: 'Other', icon: <CalendarDays className="h-4 w-4" />, color: 'text-gray-600', bgColor: 'bg-gray-50' }
+    { value: 'casual', label: 'Casual Leave', icon: Coffee, color: 'bg-blue-100 text-blue-800' },
+    { value: 'sick', label: 'Sick Leave', icon: Heart, color: 'bg-red-100 text-red-800' },
+    { value: 'maternity', label: 'Maternity Leave', icon: Baby, color: 'bg-pink-100 text-pink-800' },
+    { value: 'paternity', label: 'Paternity Leave', icon: User, color: 'bg-purple-100 text-purple-800' },
+    { value: 'annual', label: 'Annual Leave', icon: Calendar, color: 'bg-green-100 text-green-800' },
+    { value: 'work_from_home', label: 'Work from Home', icon: Home, color: 'bg-gray-100 text-gray-800' }
   ];
 
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
-
-  const fetchLeaves = async () => {
+  const fetchLeaves = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/leaves/me');
+      const response = await api.get('/leaves');
       setLeaves(response.data);
     } catch (error) {
       console.error('Error fetching leaves:', error);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const fetchHolidays = async () => {
+    try {
+      console.log('Fetching holidays...');
+      setHolidaysLoading(true);
+      const response = await api.get('/api/holidays/upcoming');
+      console.log('Holidays response:', response.data);
+      setHolidays(response.data);
+    } catch (error) {
+      console.error('Error fetching holidays:', error);
+      // Enhanced fallback holidays for all people
+      setHolidays([
+        {
+          _id: '1',
+          name: 'New Year\'s Day',
+          date: '2024-01-01',
+          type: 'public',
+          description: 'New Year celebration - Global holiday'
+        },
+        {
+          _id: '2',
+          name: 'Republic Day',
+          date: '2024-01-26',
+          type: 'public',
+          description: 'Indian Republic Day - National holiday'
+        },
+        {
+          _id: '3',
+          name: 'Good Friday',
+          date: '2024-03-29',
+          type: 'public',
+          description: 'Christian religious holiday'
+        },
+        {
+          _id: '4',
+          name: 'Easter Monday',
+          date: '2024-04-01',
+          type: 'public',
+          description: 'Christian religious holiday'
+        },
+        {
+          _id: '5',
+          name: 'Ram Navami',
+          date: '2024-04-17',
+          type: 'public',
+          description: 'Hindu religious holiday'
+        },
+        {
+          _id: '6',
+          name: 'Mahavir Jayanti',
+          date: '2024-04-21',
+          type: 'public',
+          description: 'Jain religious holiday'
+        },
+        {
+          _id: '7',
+          name: 'Buddha Purnima',
+          date: '2024-05-23',
+          type: 'public',
+          description: 'Buddhist religious holiday'
+        },
+        {
+          _id: '8',
+          name: 'Independence Day',
+          date: '2024-08-15',
+          type: 'public',
+          description: 'Indian Independence Day - National holiday'
+        },
+        {
+          _id: '9',
+          name: 'Gandhi Jayanti',
+          date: '2024-10-02',
+          type: 'public',
+          description: 'Mahatma Gandhi\'s birthday - National holiday'
+        },
+        {
+          _id: '10',
+          name: 'Diwali',
+          date: '2024-11-01',
+          type: 'public',
+          description: 'Festival of Lights - Hindu religious holiday'
+        },
+        {
+          _id: '11',
+          name: 'Guru Nanak Jayanti',
+          date: '2024-11-15',
+          type: 'public',
+          description: 'Sikh religious holiday'
+        },
+        {
+          _id: '12',
+          name: 'Christmas Day',
+          date: '2024-12-25',
+          type: 'public',
+          description: 'Christian religious holiday - Global celebration'
+        }
+      ]);
+    } finally {
+      setHolidaysLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchLeaves();
+    fetchHolidays();
+  }, [fetchLeaves]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/leaves/apply', formData);
+      await api.post('/leaves/apply', formData);
       setShowApplyForm(false);
       setFormData({ from: '', to: '', type: 'casual', reason: '' });
       fetchLeaves();
@@ -56,6 +154,10 @@ const Leaves = () => {
       console.error('Error applying leave:', error);
     }
   };
+
+  const closeModal = useCallback(() => {
+    setShowApplyForm(false);
+  }, []);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -116,12 +218,12 @@ const Leaves = () => {
       case 'pending':
         return 'Pending';
       default:
-        return status;
+        return 'Unknown';
     }
   };
 
   const getLeaveTypeInfo = (type) => {
-    return leaveTypes.find(lt => lt.value === type) || leaveTypes[leaveTypes.length - 1];
+    return leaveTypes.find(t => t.value === type) || leaveTypes[0];
   };
 
   if (loading) {
@@ -136,46 +238,298 @@ const Leaves = () => {
     <div className="space-y-6">
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
         className="flex items-center justify-between"
       >
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Leave Management</h1>
-          <p className="text-gray-600">Apply for leaves and track your leave history</p>
+          <p className="text-gray-600">Manage your leave applications and view history</p>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowApplyForm(true)}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          <span>Apply Leave</span>
-        </button>
+          Apply for Leave
+        </motion.button>
       </motion.div>
 
       {/* Leave Types Overview */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
       >
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Available Leave Types</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {leaveTypes.map((type) => (
-            <div
-              key={type.value}
-              className={`p-4 rounded-lg border ${type.bgColor} border-gray-200`}
+        {leaveTypes.map((type) => {
+          const IconComponent = type.icon;
+          return (
+            <div key={type.value} className="bg-white rounded-lg p-4 text-center border border-gray-200 hover:shadow-md transition-shadow">
+              <IconComponent className="h-8 w-8 mx-auto mb-2 text-gray-600" />
+              <p className="text-sm font-medium text-gray-900">{type.label}</p>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {/* Holidays Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ delay: 0.15 }}
+        className="bg-white rounded-lg shadow-sm border border-gray-200"
+      >
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <Gift className="h-5 w-5 mr-2 text-green-600" />
+            Upcoming Holidays
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Plan your leaves around these upcoming holidays</p>
+        </div>
+        <div className="p-6">
+          {holidaysLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+            </div>
+          ) : holidays.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {holidays.map((holiday) => {
+                const holidayDate = new Date(holiday.date);
+                const today = new Date();
+                const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
+                const isUpcoming = daysUntil > 0;
+                
+                return (
+                  <motion.div
+                    key={holiday._id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileHover={{ scale: 1.02 }}
+                    className={`bg-gradient-to-br ${
+                      isUpcoming 
+                        ? 'from-green-50 to-green-100 border-green-200' 
+                        : 'from-gray-50 to-gray-100 border-gray-200'
+                    } rounded-lg p-4 border`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <Calendar className={`h-5 w-5 mr-2 ${
+                          isUpcoming ? 'text-green-600' : 'text-gray-500'
+                        }`} />
+                        <span className={`text-sm font-medium ${
+                          isUpcoming ? 'text-green-800' : 'text-gray-700'
+                        }`}>
+                          {holiday.type === 'public' ? 'Public Holiday' : 'Company Holiday'}
+                        </span>
+                      </div>
+                      {isUpcoming && (
+                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                          {daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h4 className="font-semibold text-gray-900 mb-2">{holiday.name}</h4>
+                    
+                    <div className="flex items-center text-sm text-gray-600 mb-2">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {holidayDate.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    
+                    {holiday.description && (
+                      <p className="text-sm text-gray-600">{holiday.description}</p>
+                    )}
+                    
+                    {isUpcoming && daysUntil <= 7 && (
+                      <div className="mt-3 pt-3 border-t border-green-200">
+                        <span className="text-xs text-green-700 font-medium">
+                          ⚠️ Plan your leaves accordingly
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Gift className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+              <p className="text-gray-500">No upcoming holidays found</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* HR and Administration Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-lg shadow-sm border border-gray-200"
+      >
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <User className="h-5 w-5 mr-2 text-blue-600" />
+            HR and Administration
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">Important policies and information for employees</p>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Leave Policy */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4"
             >
-              <div className="flex items-center space-x-3">
-                <div className={type.color}>{type.icon}</div>
-                <div>
-                  <h4 className="font-medium text-gray-900">{type.label}</h4>
-                  <p className="text-sm text-gray-600">Available for application</p>
+              <div className="flex items-center mb-3">
+                <FileText className="h-6 w-6 text-blue-600 mr-2" />
+                <h4 className="font-semibold text-blue-900">Leave Policy</h4>
+              </div>
+              <div className="space-y-2 text-sm text-blue-800">
+                <div className="flex justify-between">
+                  <span>Casual Leave:</span>
+                  <span className="font-medium">12 days/year</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Sick Leave:</span>
+                  <span className="font-medium">15 days/year</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Earned Leave:</span>
+                  <span className="font-medium">30 days/year</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Maternity Leave:</span>
+                  <span className="font-medium">26 weeks</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Paternity Leave:</span>
+                  <span className="font-medium">15 days</span>
                 </div>
               </div>
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <span className="text-xs text-blue-700 font-medium">
+                  📋 Apply at least 3 days in advance for planned leaves
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Compensatory Leave Policy */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4"
+            >
+              <div className="flex items-center mb-3">
+                <Clock className="h-6 w-6 text-green-600 mr-2" />
+                <h4 className="font-semibold text-green-900">Compensatory Leave Policy</h4>
+              </div>
+              <div className="space-y-2 text-sm text-green-800">
+                <div className="flex justify-between">
+                  <span>Weekend Work:</span>
+                  <span className="font-medium">1:1 ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Holiday Work:</span>
+                  <span className="font-medium">1:1 ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Overtime (8+ hrs):</span>
+                  <span className="font-medium">0.5:1 ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Night Shift:</span>
+                  <span className="font-medium">0.5:1 ratio</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Max Comp Off:</span>
+                  <span className="font-medium">30 days</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-green-200">
+                <span className="text-xs text-green-700 font-medium">
+                  ⏰ Comp off must be availed within 3 months
+                </span>
+              </div>
+            </motion.div>
+
+            {/* EPF Details */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4"
+            >
+              <div className="flex items-center mb-3">
+                <Building className="h-6 w-6 text-purple-600 mr-2" />
+                <h4 className="font-semibold text-purple-900">EPF Details</h4>
+              </div>
+              <div className="space-y-2 text-sm text-purple-800">
+                <div className="flex justify-between">
+                  <span>Employee Contribution:</span>
+                  <span className="font-medium">12% of Basic</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Employer Contribution:</span>
+                  <span className="font-medium">12% of Basic</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>EPS Contribution:</span>
+                  <span className="font-medium">8.33% of Basic</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>EPF Admin:</span>
+                  <span className="font-medium">0.5% of Basic</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>EDLI:</span>
+                  <span className="font-medium">0.5% of Basic</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-purple-200">
+                <span className="text-xs text-purple-700 font-medium">
+                  💰 EPF account number: EPF123456789
+                </span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Additional Information */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h5 className="font-medium text-gray-900 mb-2 flex items-center">
+              <Info className="h-4 w-4 mr-2 text-gray-600" />
+              Important Notes
+            </h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+              <div>
+                <p className="mb-2"><strong>Leave Application:</strong> Submit through the portal at least 3 working days in advance.</p>
+                <p className="mb-2"><strong>Medical Certificate:</strong> Required for sick leave exceeding 3 days.</p>
+              </div>
+              <div>
+                <p className="mb-2"><strong>Comp Off:</strong> Must be approved by manager and availed within 3 months.</p>
+                <p className="mb-2"><strong>EPF Withdrawal:</strong> Available after 2 months of unemployment or retirement.</p>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </motion.div>
 
@@ -183,66 +537,62 @@ const Leaves = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
         transition={{ delay: 0.2 }}
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        className="bg-white rounded-lg shadow-sm border border-gray-200"
       >
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Leave History</h3>
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-blue-600" />
+            Leave History
+          </h3>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Leave Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  From - To
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Days
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reason
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leave Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {leaves.length > 0 ? (
                 leaves.map((leave) => {
                   const leaveTypeInfo = getLeaveTypeInfo(leave.type);
+                  const IconComponent = leaveTypeInfo.icon;
                   return (
                     <tr key={leave._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className={leaveTypeInfo.color}>{leaveTypeInfo.icon}</div>
-                          <span className="ml-2 font-medium text-gray-900">{leaveTypeInfo.label}</span>
+                          <IconComponent className="h-5 w-5 mr-2 text-gray-600" />
+                          <span className="text-sm font-medium text-gray-900">{leaveTypeInfo.label}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(leave.from).toLocaleDateString()} - {new Date(leave.to).toLocaleDateString()}
+                        {new Date(leave.from).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {leave.totalDays} day(s)
+                        {new Date(leave.to).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
+                        <div className="flex items-center space-x-2">
                           {getStatusIcon(leave.status)}
-                          <span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(leave.status)}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(leave.status)}`}>
                             {getStatusLabel(leave.status)}
                           </span>
                         </div>
-                        {/* Show approval workflow details */}
                         {leave.managerApproval && (
-                          <div className="mt-1 text-xs text-gray-500">
-                            <div>Manager: {leave.managerApproval.status === 'pending' ? 'Pending' : 
-                              leave.managerApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}</div>
-                            {leave.hrApproval && (
-                              <div>HR: {leave.hrApproval.status === 'pending' ? 'Pending' : 
-                                leave.hrApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}</div>
-                            )}
+                          <div className="text-xs text-gray-500 mt-1">
+                            Manager: {leave.managerApproval.status === 'pending' ? 'Pending' : 
+                              leave.managerApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
                           </div>
+                        )}
+                        {leave.hrApproval && (
+                          <div>HR: {leave.hrApproval.status === 'pending' ? 'Pending' : 
+                            leave.hrApproval.status === 'approved' ? '✓ Approved' : '✗ Rejected'}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
@@ -264,83 +614,89 @@ const Leaves = () => {
       </motion.div>
 
       {/* Apply Leave Modal */}
-      {showApplyForm && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        >
+      <AnimatePresence>
+        {showApplyForm && (
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={closeModal}
           >
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Apply for Leave</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  {leaveTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                <input
-                  type="date"
-                  value={formData.from}
-                  onChange={(e) => setFormData({ ...formData, from: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                <input
-                  type="date"
-                  value={formData.to}
-                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                <textarea
-                  value={formData.reason}
-                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="3"
-                  required
-                />
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Apply Leave
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowApplyForm(false)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Apply for Leave</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    {leaveTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    value={formData.from}
+                    onChange={(e) => setFormData({ ...formData, from: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    value={formData.to}
+                    onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <textarea
+                    value={formData.reason}
+                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    required
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };

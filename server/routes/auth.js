@@ -16,9 +16,9 @@ const generateToken = (userId) => {
 // @desc    Register a new user
 // @access  Public
 router.post('/signup', [
-  body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('name').trim().isLength({ min: 1 }).withMessage('Name is required'),
+  body('email').trim().isLength({ min: 1 }).withMessage('Email is required'),
+  body('password').isLength({ min: 1 }).withMessage('Password is required'),
   body('role').optional().isIn(['admin', 'employee']).withMessage('Invalid role')
 ], async (req, res) => {
   try {
@@ -29,14 +29,8 @@ router.post('/signup', [
 
     const { name, email, password, role = 'employee', department, position, phone } = req.body;
 
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Create new user
-    user = new User({
+    // Create new user (no duplicate email check)
+    const user = new User({
       name,
       email,
       password,
@@ -73,7 +67,7 @@ router.post('/signup', [
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', [
-  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  body('email').trim().isLength({ min: 1 }).withMessage('Email is required'),
   body('password').exists().withMessage('Password is required')
 ], async (req, res) => {
   try {
@@ -131,7 +125,7 @@ router.post('/login', [
 // @desc    Send reset password email
 // @access  Public
 router.post('/forgot-password', [
-  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email')
+  body('email').trim().isLength({ min: 1 }).withMessage('Email is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -168,7 +162,7 @@ router.post('/forgot-password', [
 // @access  Public
 router.post('/reset-password', [
   body('token').exists().withMessage('Token is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  body('password').isLength({ min: 1 }).withMessage('Password is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

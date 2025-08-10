@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -14,7 +14,7 @@ const Attendance = () => {
   const fetchAttendanceData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/attendance/me?month=${selectedMonth}&year=${selectedYear}`);
+      const response = await api.get(`/attendance/me?month=${selectedMonth}&year=${selectedYear}`);
       setAttendanceData(response.data);
     } catch (error) {
       console.error('Error fetching attendance data:', error);

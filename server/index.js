@@ -19,10 +19,15 @@ const app = express();
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://attendance-portal-kmfkmwmma-induspriyas-projects.vercel.app',
+        'https://attendance-portal-rmcxcn8dj-induspriyas-projects.vercel.app',
         'https://attendance-portal.vercel.app',
+        'https://attendance-portal-kmfkmwmma-induspriyas-projects.vercel.app',
         'https://attendance-portal-4g3lquqet-induspriyas-projects.vercel.app',
-        'https://attendance-portal-ebco5ecs6-induspriyas-projects.vercel.app',
+        'https://attendance-portal-fcjuie5ug-induspriyas-projects.vercel.app',
+        'https://attendance-portal-gq0i990oc-induspriyas-projects.vercel.app',
+        'https://attendance-portal-3dhx5gi4t-induspriyas-projects.vercel.app',
+        'https://attendance-portal-cbbmvwciu-induspriyas-projects.vercel.app',
+        'https://attendance-portal-nvl4hdl1s-induspriyas-projects.vercel.app',
         /^https:\/\/attendance-portal-.*-induspriyas-projects\.vercel\.app$/
       ]
     : ['http://localhost:3000'],

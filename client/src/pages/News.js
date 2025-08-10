@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Clock, Tag, User, AlertCircle, Info, Calendar } from 'lucide-react';
-import { getAllNews } from '../api/news';
+import api from '../api/axios';
 
 const News = () => {
   const [news, setNews] = useState([]);
@@ -18,10 +18,15 @@ const News = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const response = await getAllNews();
-      setNews(response.news || response);
+      console.log('🔍 Fetching news...');
+      const response = await api.get('/api/news');
+      console.log('📡 API Response:', response);
+      console.log('📊 Response data:', response.data);
+      const newsData = response.data.news || response.data;
+      console.log('📝 Setting news data:', newsData);
+      setNews(newsData);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error('❌ Error fetching news:', error);
     } finally {
       setLoading(false);
     }
@@ -115,6 +120,15 @@ const News = () => {
     }
     
     return true;
+  });
+
+  // Debug logging
+  console.log('📋 News state:', { 
+    newsLength: news.length, 
+    filteredLength: filteredNews.length, 
+    loading, 
+    filter, 
+    priorityFilter 
   });
 
   const categories = [
@@ -230,11 +244,32 @@ const News = () => {
           <p className="text-sm text-gray-600">
             Showing {filteredNews.length} of {news.length} news items
           </p>
+          {/* Debug Info */}
+          <div className="mt-2 p-2 bg-yellow-100 rounded text-xs text-yellow-800 border border-yellow-300">
+            <p><strong>Debug Info:</strong></p>
+            <p>News array length: {news.length}</p>
+            <p>Filtered news length: {filteredNews.length}</p>
+            <p>Loading: {loading.toString()}</p>
+            <p>Filter: {filter}, Priority: {priorityFilter}</p>
+          </div>
         </div>
       </motion.div>
 
-      {/* News Grid */}
-      {filteredNews.length > 0 ? (
+      {/* Loading State */}
+      {loading ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-center py-12"
+        >
+          <div className="max-w-md mx-auto">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading news...</h3>
+            <p className="text-gray-500">Please wait while we fetch the latest updates.</p>
+          </div>
+        </motion.div>
+      ) : filteredNews.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

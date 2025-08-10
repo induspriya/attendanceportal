@@ -1,9 +1,35 @@
 {
   "version": 2,
+  "functions": {
+    "api/test.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/auth/login.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/auth/signup.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/health.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/test",
+      "destination": "/api/test.js"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login.js"
+    },
+    {
+      "source": "/api/auth/signup",
+      "destination": "/api/auth/signup.js"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health.js"
     },
     {
       "source": "/(.*)",

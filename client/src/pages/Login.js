@@ -34,16 +34,12 @@ const Login = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
     }
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
 
     setErrors(newErrors);
@@ -59,26 +55,36 @@ const Login = () => {
 
     setLoading(true);
     try {
-      console.log('Attempting login with:', formData);
+      console.log('=== LOGIN FLOW START ===');
+      console.log('Login: Attempting login with:', formData);
+      console.log('Login: Current location before login:', window.location.href);
+      console.log('Login: Form data - email:', formData.email, 'password:', formData.password);
+      
       const result = await login(formData.email, formData.password);
-      console.log('Login result:', result);
+      console.log('Login: Login result:', result);
       
       if (result.success) {
-        console.log('Login successful, navigating to dashboard...');
+        console.log('Login: Login successful, navigating to dashboard...');
+        console.log('Login: User state after login:', result);
+        console.log('Login: About to call navigate("/dashboard")');
+        
         try {
+          console.log('Login: Attempting React Router navigation...');
           navigate('/dashboard');
-          console.log('React Router navigation attempted');
+          console.log('Login: React Router navigation completed');
         } catch (navError) {
-          console.error('Navigation error, using fallback:', navError);
+          console.error('Login: Navigation error, using fallback:', navError);
+          console.log('Login: Using window.location fallback...');
           window.location.href = '/dashboard';
         }
       } else {
-        console.log('Login failed:', result.error);
+        console.log('Login: Login failed:', result.error);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login: Login error:', error);
     } finally {
       setLoading(false);
+      console.log('=== LOGIN FLOW END ===');
     }
   };
 
@@ -115,6 +121,36 @@ const Login = () => {
           >
             Sign in to your Attendance Portal account
           </motion.p>
+          
+          {/* Mock Credentials Display */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+          >
+            <h3 className="text-sm font-semibold text-blue-800 mb-2">🧪 Test Credentials (Mock Mode)</h3>
+            <div className="space-y-2 text-xs text-blue-700">
+              <div><strong>Admin:</strong> admin@example.com / admin123</div>
+              <div><strong>Employee:</strong> john@example.com / user123</div>
+              <div><strong>Manager:</strong> jane@example.com / user123</div>
+            </div>
+            
+            {/* Test Navigation Button */}
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <button
+                onClick={() => {
+                  console.log('=== TEST NAVIGATION ===');
+                  console.log('Current location:', window.location.href);
+                  console.log('Attempting direct navigation to /dashboard');
+                  navigate('/dashboard');
+                  console.log('Navigation call completed');
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+              >
+                🧪 Test Navigate to Dashboard
+              </button>
+            </div>
+          </motion.div>
         </div>
 
         <motion.form

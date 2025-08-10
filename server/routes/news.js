@@ -1,9 +1,19 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const News = require('../models/News');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Test endpoint to check if news route is working
+router.get('/test', (req, res) => {
+  res.json({ 
+    message: 'News route is working',
+    timestamp: new Date().toISOString(),
+    mongooseState: mongoose.connection.readyState
+  });
+});
 
 // @route   GET /api/news
 // @desc    Get all published news
@@ -59,7 +69,22 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/latest', async (req, res) => {
   try {
+    console.log('Latest news endpoint called');
+    
+    // Check if News model is available
+    if (!News) {
+      console.error('News model not available');
+      return res.status(500).json({ message: 'News model not available' });
+    }
+
     const { limit = 5 } = req.query;
+    console.log('Query limit:', limit);
+
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.error('Database not connected. State:', mongoose.connection.readyState);
+      return res.status(500).json({ message: 'Database not connected' });
+    }
 
     const news = await News.find({
       isPublished: true,
@@ -72,10 +97,16 @@ router.get('/latest', async (req, res) => {
       .sort({ publishedAt: -1 })
       .limit(parseInt(limit));
 
+    console.log('Found news items:', news.length);
     res.json(news);
   } catch (error) {
     console.error('Get latest news error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
