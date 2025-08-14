@@ -6,26 +6,26 @@
       "use": "@vercel/node"
     },
     {
-      "src": "client/build/**/*",
+      "src": "**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/favicon.ico",
-      "dest": "/client/build/logo.svg"
+      "dest": "/logo.svg"
     },
     {
       "src": "/logo.svg",
-      "dest": "/client/build/logo.svg"
+      "dest": "/logo.svg"
     },
     {
       "src": "/manifest.json",
-      "dest": "/client/build/manifest.json"
+      "dest": "/manifest.json"
     },
     {
       "src": "/robots.txt",
-      "dest": "/client/build/robots.txt"
+      "dest": "/robots.txt"
     },
     {
       "src": "/api/(.*)",
@@ -33,11 +33,11 @@
     },
     {
       "src": "/static/(.*)",
-      "dest": "/client/build/static/$1"
+      "dest": "/static/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/client/build/index.html"
+      "dest": "/index.html"
     }
   ]
 } 
