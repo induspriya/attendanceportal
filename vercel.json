@@ -12,8 +12,16 @@
   ],
   "routes": [
     {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
+      "src": "/logo.svg",
+      "dest": "/client/build/logo.svg"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/client/build/manifest.json"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/client/build/robots.txt"
     },
     {
       "src": "/api/(.*)",
@@ -21,7 +29,7 @@
     },
     {
       "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "dest": "/client/build/static/$1"
     },
     {
       "src": "/(.*)",
