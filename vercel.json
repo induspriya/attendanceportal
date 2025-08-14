@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/favicon.ico",
-      "dest": "/client/build/favicon.ico"
+      "dest": "/client/build/logo.svg"
     },
     {
       "src": "/logo.svg",
