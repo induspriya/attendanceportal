@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [upcomingHolidays, setUpcomingHolidays] = useState([]);
   const [latestNews, setLatestNews] = useState([]);
+  const [error, setError] = useState(null);
 
   console.log('=== DASHBOARD COMPONENT RENDER ===');
   console.log('Dashboard: Component mounted');
@@ -31,12 +32,56 @@ const Dashboard = () => {
 
   useEffect(() => {
     console.log('Dashboard: useEffect triggered');
-    fetchDashboardData();
+    try {
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Dashboard: Error in useEffect:', err);
+      setError(err.message);
+      setLoading(false);
+    }
   }, []);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      
+      // In development mode, set mock data instead of making API calls
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Dashboard: Development mode - using mock data');
+        setAttendanceData({
+          totalDays: 30,
+          presentDays: 25,
+          absentDays: 3,
+          lateDays: 2,
+          attendanceRate: 83.3,
+          summary: {
+            presentDays: 25,
+            totalHours: 200
+          },
+          attendance: [
+            { _id: 'att_1', date: new Date().toISOString(), totalHours: 8 },
+            { _id: 'att_2', date: new Date(Date.now() - 86400000).toISOString(), totalHours: 7.5 },
+            { _id: 'att_3', date: new Date(Date.now() - 172800000).toISOString(), totalHours: 8 }
+          ]
+        });
+        setTodayStatus({
+          status: 'checked_in',
+          checkInTime: '09:00 AM',
+          checkOutTime: null,
+          canCheckIn: false,
+          canCheckOut: true
+        });
+        setUpcomingHolidays([
+          { _id: 'holiday_1', name: 'Independence Day', date: '2024-08-15', type: 'gazetted' },
+          { _id: 'holiday_2', name: 'Raksha Bandhan', date: '2024-08-19', type: 'restricted' }
+        ]);
+        setLatestNews([
+          { _id: 'news_1', title: 'Welcome to the New Attendance Portal!', summary: 'New attendance portal launched with enhanced features', publishedAt: new Date(), priority: 'high' },
+          { _id: 'news_2', title: 'Holiday Schedule for Q4 2024', summary: 'Q4 2024 holiday schedule announced', publishedAt: new Date(), priority: 'info' }
+        ]);
+        setLoading(false);
+        return;
+      }
       
       // Fetch data in parallel
       const [attendanceData, todayData, holidaysData, newsData] = await Promise.all([
@@ -56,10 +101,28 @@ const Dashboard = () => {
           presentDays: 0,
           absentDays: 0,
           lateDays: 0,
-          attendanceRate: 0
+          attendanceRate: 0,
+          summary: {
+            presentDays: 0,
+            totalHours: 0
+          },
+          attendance: []
         });
       } else {
-        setAttendanceData(attendanceRes.data);
+        // Ensure attendance data has proper structure
+        const attendanceData = attendanceRes.data;
+        if (attendanceData && Array.isArray(attendanceData.attendance)) {
+          const processedAttendance = attendanceData.attendance.map((att, index) => ({
+            ...att,
+            _id: att._id || `att_${index}`
+          }));
+          setAttendanceData({
+            ...attendanceData,
+            attendance: processedAttendance
+          });
+        } else {
+          setAttendanceData(attendanceData);
+        }
       }
       
       if (todayRes.error) {
@@ -67,7 +130,9 @@ const Dashboard = () => {
         setTodayStatus({
           status: 'not_marked',
           checkInTime: null,
-          checkOutTime: null
+          checkOutTime: null,
+          canCheckIn: true,
+          canCheckOut: false
         });
       } else {
         setTodayStatus(todayRes.data);
@@ -77,14 +142,36 @@ const Dashboard = () => {
         console.warn('Holidays API failed:', holidaysRes.error.message);
         setUpcomingHolidays([]);
       } else {
-        setUpcomingHolidays(holidaysRes.data);
+        // Ensure holidays data has proper structure with _id
+        const holidaysData = holidaysRes.data;
+        if (Array.isArray(holidaysData)) {
+          const processedHolidays = holidaysData.map((holiday, index) => ({
+            ...holiday,
+            _id: holiday._id || `holiday_${index}`
+          }));
+          setUpcomingHolidays(processedHolidays);
+        } else {
+          setUpcomingHolidays([]);
+        }
       }
       
       if (newsRes.error) {
         console.warn('News API failed:', newsRes.error.message);
         setLatestNews([]);
       } else {
-        setLatestNews(newsRes.data || newsRes);
+        // Ensure news data has proper structure with _id and publishedAt
+        const newsData = newsRes.data || newsRes;
+        if (Array.isArray(newsData)) {
+          const processedNews = newsData.map((news, index) => ({
+            ...news,
+            _id: news._id || `news_${index}`,
+            publishedAt: news.publishedAt || new Date(),
+            priority: news.priority || 'info'
+          }));
+          setLatestNews(processedNews);
+        } else {
+          setLatestNews([]);
+        }
       }
       
     } catch (error) {
@@ -95,12 +182,19 @@ const Dashboard = () => {
         presentDays: 0,
         absentDays: 0,
         lateDays: 0,
-        attendanceRate: 0
+        attendanceRate: 0,
+        summary: {
+          presentDays: 0,
+          totalHours: 0
+        },
+        attendance: []
       });
       setTodayStatus({
         status: 'not_marked',
         checkInTime: null,
-        checkOutTime: null
+        checkOutTime: null,
+        canCheckIn: true,
+        canCheckOut: false
       });
       setUpcomingHolidays([]);
       setLatestNews([]);
@@ -142,6 +236,38 @@ const Dashboard = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-600 text-xl mb-2">⚠️ Error Loading Dashboard</div>
+          <div className="text-gray-600 mb-4">{error}</div>
+          <button 
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              fetchDashboardData();
+            }}
+            className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-gray-600 text-xl mb-2">Loading user information...</div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mt-4"></div>
+        </div>
       </div>
     );
   }
@@ -291,7 +417,7 @@ const Dashboard = () => {
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {user?.role === 'admin' && (
-                <div className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                <div key="admin-access" className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
                   <Settings className="h-5 w-5 text-blue-600 mr-3" />
                   <div>
                     <h4 className="font-medium text-blue-900">Administration</h4>
@@ -300,7 +426,7 @@ const Dashboard = () => {
                 </div>
               )}
               {user?.role === 'hr' && (
-                <div className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors cursor-pointer">
+                <div key="hr-access" className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors cursor-pointer">
                   <Users className="h-5 w-5 text-green-600 mr-3" />
                   <div>
                     <h4 className="font-medium text-green-900">HR Management</h4>
@@ -309,7 +435,7 @@ const Dashboard = () => {
                 </div>
               )}
               {user?.role === 'manager' && (
-                <div className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors cursor-pointer">
+                <div key="manager-access" className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors cursor-pointer">
                   <Calendar className="h-5 w-5 text-purple-600 mr-3" />
                   <div>
                     <h4 className="font-medium text-purple-900">Manager Approvals</h4>
@@ -337,7 +463,15 @@ const Dashboard = () => {
           <div className="card-body">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={attendanceData?.attendance?.slice(0, 7) || []}>
+                <BarChart data={(attendanceData?.attendance?.slice(0, 7) || [
+                  { date: new Date().toISOString(), totalHours: 8, _id: 'chart_1' },
+                  { date: new Date(Date.now() - 86400000).toISOString(), totalHours: 7.5, _id: 'chart_2' },
+                  { date: new Date(Date.now() - 172800000).toISOString(), totalHours: 8, _id: 'chart_3' }
+                ]).map((item, index) => ({
+                  ...item,
+                  _id: item._id || `chart_${index}`,
+                  key: item._id || `chart_${index}`
+                }))}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="date" 

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Safari Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Safari Compatibility Test</h1>
+    
+    <div id="status" class="status">Testing...</div>
+    
+    <h2>Test Results:</h2>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        const status = document.getElementById('status');
+        
+        function addResult(test, passed, details = '') {
+            const div = document.createElement('div');
+            div.className = `status ${passed ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${test}:</strong> ${passed ? 'PASS' : 'FAIL'} ${details}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Basic JavaScript
+        try {
+            addResult('Basic JavaScript', true);
+        } catch (e) {
+            addResult('Basic JavaScript', false, e.message);
+        }
+        
+        // Test 2: ES6 Features
+        try {
+            const test = 'ES6';
+            addResult('ES6 const/let', true);
+        } catch (e) {
+            addResult('ES6 const/let', false, e.message);
+        }
+        
+        // Test 3: Fetch API
+        try {
+            if (typeof fetch !== 'undefined') {
+                addResult('Fetch API', true);
+            } else {
+                addResult('Fetch API', false, 'Not available');
+            }
+        } catch (e) {
+            addResult('Fetch API', false, e.message);
+        }
+        
+        // Test 4: Service Worker
+        try {
+            if ('serviceWorker' in navigator) {
+                addResult('Service Worker Support', true);
+            } else {
+                addResult('Service Worker Support', false, 'Not available');
+            }
+        } catch (e) {
+            addResult('Service Worker Support', false, e.message);
+        }
+        
+        // Test 5: Try to load main app
+        try {
+            fetch('/static/js/main.1baf632c.js')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('Main JS Load', true);
+                    } else {
+                        addResult('Main JS Load', false, `HTTP ${response.status}`);
+                    }
+                })
+                .catch(error => {
+                    addResult('Main JS Load', false, error.message);
+                });
+        } catch (e) {
+            addResult('Main JS Load', false, e.message);
+        }
+        
+        status.innerHTML = 'Testing Complete!';
+        status.className = 'status success';
+    </script>
+</body>
+</html> 

@@ -3,13 +3,27 @@ import axios from 'axios';
 // Create axios instance with base URL pointing to backend
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://attendance-portal-5gh2wpldx-induspriyas-projects.vercel.app/api' // Vercel deployment URL
+    ? process.env.REACT_APP_API_URL || 'http://localhost:5001/api' // For now, use local backend
     : 'http://localhost:5001/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Add a fallback for when backend is not accessible
+api.interceptors.request.use(
+  (config) => {
+    // Check if we're in production and backend might not be accessible
+    if (process.env.NODE_ENV === 'production' && !process.env.REACT_APP_API_URL) {
+      console.warn('Backend URL not configured. API calls may fail.');
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // List of public endpoints that don't require authentication
 const publicEndpoints = [

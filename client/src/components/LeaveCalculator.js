@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Calculator, Info, TrendingUp } from 'lucide-react';
+import { Calendar, Info, TrendingUp } from 'lucide-react';
 
 const LeaveCalculator = () => {
   const [formData, setFormData] = useState({

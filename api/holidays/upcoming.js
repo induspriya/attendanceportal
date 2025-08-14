@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Import models
-const News = require('../../server/models/News');
+const Holiday = require('../../server/models/Holiday');
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -33,17 +33,18 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
     
-    const limit = parseInt(req.query.limit) || 5;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Get latest published news
-    const latestNews = await News.find({
-      isPublished: true
+    // Get upcoming holidays
+    const upcomingHolidays = await Holiday.find({
+      date: { $gte: today },
+      isActive: true
     })
-    .sort({ publishedAt: -1 })
-    .limit(limit)
-    .populate('createdBy', 'name');
+    .sort({ date: 1 })
+    .limit(10);
 
-    res.status(200).json(latestNews);
+    res.status(200).json(upcomingHolidays);
 
   } catch (error) {
     console.error('Error:', error);

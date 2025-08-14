@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+
+# Sitemap location (if you have one)
+# Sitemap: https://attandanceportal.vercel.app/sitemap.xml 

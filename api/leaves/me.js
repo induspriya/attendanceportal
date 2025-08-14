@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // Import models
-const News = require('../../server/models/News');
+const Leave = require('../../server/models/Leave');
+const User = require('../../server/models/User');
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -12,6 +14,23 @@ const connectDB = async () => {
   } catch (error) {
     console.error('MongoDB connection error:', error);
     throw error;
+  }
+};
+
+// Auth middleware
+const authenticateToken = (req) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    throw new Error('Access denied. No token provided.');
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    throw new Error('Invalid token.');
   }
 };
 
@@ -33,17 +52,15 @@ module.exports = async (req, res) => {
   try {
     await connectDB();
     
-    const limit = parseInt(req.query.limit) || 5;
+    const decoded = authenticateToken(req);
+    const userId = decoded.userId;
 
-    // Get latest published news
-    const latestNews = await News.find({
-      isPublished: true
-    })
-    .sort({ publishedAt: -1 })
-    .limit(limit)
-    .populate('createdBy', 'name');
+    // Get user's leave records
+    const leaves = await Leave.find({ userId })
+      .sort({ startDate: -1 })
+      .limit(50);
 
-    res.status(200).json(latestNews);
+    res.status(200).json(leaves);
 
   } catch (error) {
     console.error('Error:', error);

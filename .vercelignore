@@ -1,0 +1,33 @@
+# Development files
+node_modules/
+server/
+client/src/
+client/public/
+client/package*.json
+client/tailwind.config.js
+client/postcss.config.js
+
+# Build artifacts
+client/build/
+
+# Environment files
+.env*
+!.env.production
+
+# Git files
+.git/
+.gitignore
+
+# Documentation
+*.md
+DEPLOYMENT.md
+VERCEL_*.md
+QUICK_DEPLOY.md
+
+# Scripts
+*.sh
+deploy*.sh
+setup-*.sh
+
+# Test files
+test.html

@@ -5,7 +5,6 @@ import {
   Calendar, 
   Clock, 
   PiggyBank, 
-  FileText, 
   ChevronRight,
   Download,
   Eye

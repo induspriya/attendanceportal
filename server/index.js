@@ -16,25 +16,39 @@ const newsRoutes = require('./routes/news');
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [
-        'https://attendance-portal-rmcxcn8dj-induspriyas-projects.vercel.app',
-        'https://attendance-portal.vercel.app',
-        'https://attendance-portal-kmfkmwmma-induspriyas-projects.vercel.app',
-        'https://attendance-portal-4g3lquqet-induspriyas-projects.vercel.app',
-        'https://attendance-portal-fcjuie5ug-induspriyas-projects.vercel.app',
-        'https://attendance-portal-gq0i990oc-induspriyas-projects.vercel.app',
-        'https://attendance-portal-3dhx5gi4t-induspriyas-projects.vercel.app',
-        'https://attendance-portal-cbbmvwciu-induspriyas-projects.vercel.app',
-        'https://attendance-portal-nvl4hdl1s-induspriyas-projects.vercel.app',
-        /^https:\/\/attendance-portal-.*-induspriyas-projects\.vercel\.app$/
-      ]
-    : ['http://localhost:3000'],
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (process.env.NODE_ENV === 'production') {
+      // Production: Allow specific origins or use environment variable
+      const allowedOrigins = process.env.ALLOWED_ORIGINS 
+        ? process.env.ALLOWED_ORIGINS.split(',')
+        : [
+            'https://attendance-portal-deploy-ja2xug007-induspriyas-projects.vercel.app',
+            'https://attendance-portal-deploy.vercel.app',
+            'https://attendance-portal-fd2h8q3mn-induspriyas-projects.vercel.app',
+            'https://attendance-portal-rmcxcn8dj-induspriyas-projects.vercel.app',
+            'https://attendance-portal.vercel.app',
+            /^https:\/\/attendance-portal-.*-induspriyas-projects\.vercel\.app$/
+          ];
+      
+      if (!origin || allowedOrigins.includes(origin) || 
+          allowedOrigins.some(allowed => allowed instanceof RegExp && allowed.test(origin))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else {
+      // Development: Allow localhost origins
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -132,7 +146,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`CORS enabled for production: ${process.env.NODE_ENV === 'production'}`);
 }); 
