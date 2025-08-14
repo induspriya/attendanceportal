@@ -1,16 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "src": "/favicon.ico",
       "dest": "/logo.svg"
@@ -26,10 +25,6 @@
     {
       "src": "/robots.txt",
       "dest": "/robots.txt"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
     },
     {
       "src": "/static/(.*)",
