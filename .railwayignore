@@ -1,0 +1,8 @@
+client/
+attendance-portal-deploy/
+*.md
+deploy-*.sh
+vercel.json*
+.env*
+.git/
+node_modules/
