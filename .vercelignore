@@ -4,6 +4,9 @@ server/
 client/tailwind.config.js
 client/postcss.config.js
 
+# API model files (not Vercel Functions)
+api/models/
+
 # Environment files
 .env*
 !.env.production
