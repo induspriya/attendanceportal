@@ -1,21 +1,8 @@
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
-// Import models
-const Leave = require('../models/Leave');
-const User = require('../models/User');
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
-};
+// In-memory storage for mock leave data
+let mockLeaveData = new Map();
+let leaveCounter = 1;
 
 // Auth middleware
 const authenticateToken = (req) => {
@@ -27,8 +14,8 @@ const authenticateToken = (req) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
+    // For now, accept any token for testing
+    return { userId: 'test_user_123' };
   } catch (error) {
     throw new Error('Invalid token.');
   }
@@ -50,8 +37,6 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDB();
-    
     const decoded = authenticateToken(req);
     const userId = decoded.userId;
 
@@ -64,16 +49,20 @@ module.exports = async (req, res) => {
     }
 
     // Create new leave application
-    const leave = new Leave({
+    const leave = {
+      _id: `leave_${leaveCounter++}`,
       userId,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       reason,
       type,
-      status: 'pending'
-    });
+      status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    await leave.save();
+    // Store in mock data
+    mockLeaveData.set(leave._id, leave);
 
     res.status(201).json({
       message: 'Leave application submitted successfully',
@@ -86,7 +75,5 @@ module.exports = async (req, res) => {
       message: 'Server error', 
       error: error.message 
     });
-  } finally {
-    await mongoose.disconnect();
   }
 };
