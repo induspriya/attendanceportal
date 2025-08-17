@@ -222,7 +222,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       hasInitialized.current = false;
     };
-  }, [isInitialized]); // Only depend on isInitialized
+  }, [isInitialized, loading, mockUsers, isMounted]); // Include all dependencies
 
   const login = async (email, password) => {
     try {
