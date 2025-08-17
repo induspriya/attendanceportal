@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const User = require('../../server/models/User');
+const User = require('../models/User');
 
 // Generate JWT Token
 const generateToken = (userId) => {

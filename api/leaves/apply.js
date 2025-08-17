@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 // Import models
-const Leave = require('../../server/models/Leave');
-const User = require('../../server/models/User');
+const Leave = require('../models/Leave');
+const User = require('../models/User');
 
 // Connect to MongoDB
 const connectDB = async () => {

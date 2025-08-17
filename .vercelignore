@@ -3,12 +3,8 @@ node_modules/
 server/
 client/src/
 client/public/
-client/package*.json
 client/tailwind.config.js
 client/postcss.config.js
-
-# Build artifacts
-client/build/
 
 # Environment files
 .env*

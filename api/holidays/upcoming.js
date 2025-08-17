@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Import models
-const Holiday = require('../../server/models/Holiday');
+const Holiday = require('../models/Holiday');
 
 // Connect to MongoDB
 const connectDB = async () => {

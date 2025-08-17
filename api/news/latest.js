@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Import models
-const News = require('../../server/models/News');
+const News = require('../models/News');
 
 // Connect to MongoDB
 const connectDB = async () => {
