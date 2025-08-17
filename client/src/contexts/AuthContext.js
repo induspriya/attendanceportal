@@ -258,13 +258,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: devUser };
       }
 
-      // Set base URL for API calls
-      if (process.env.NODE_ENV === 'production') {
-        api.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://your-backend-url.com/api';
-      } else {
-        api.defaults.baseURL = 'http://localhost:5001/api';
-      }
-
+      // Base URL is already configured in axios instance
       const response = await api.post('/auth/login', { email, password });
       
       if (response.data.token) {
@@ -333,13 +327,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: devUser };
       }
 
-      // Set base URL for API calls
-      if (process.env.NODE_ENV === 'production') {
-        api.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://your-backend-url.com/api';
-      } else {
-        api.defaults.baseURL = 'http://localhost:5001/api';
-      }
-
+      // Base URL is already configured in axios instance
       const response = await api.post('/auth/signup', userData);
       
       if (response.data.token) {
@@ -395,13 +383,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Set base URL for API calls
-      if (process.env.NODE_ENV === 'production') {
-        api.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://your-backend-url.com/api';
-      } else {
-        api.defaults.baseURL = 'http://localhost:5001/api';
-      }
-
+      // Base URL is already configured in axios instance
       await api.post('/auth/forgot-password', { email });
       return { success: true };
     } catch (error) {
@@ -426,13 +408,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Set base URL for API calls
-      if (process.env.NODE_ENV === 'production') {
-        api.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://your-backend-url.com/api';
-      } else {
-        api.defaults.baseURL = 'http://localhost:5001/api';
-      }
-
+      // Base URL is already configured in axios instance
       await api.post('/auth/reset-password', { token, password });
       return { success: true };
     } catch (error) {
