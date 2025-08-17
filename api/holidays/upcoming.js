@@ -1,19 +1,4 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
-
-// Import models
-const Holiday = require('../models/Holiday');
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
-};
+// Mock data endpoint - no database connection needed
 
 module.exports = async (req, res) => {
   // Set CORS headers
