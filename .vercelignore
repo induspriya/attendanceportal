@@ -1,7 +1,6 @@
 # Development files
 node_modules/
 server/
-client/src/
 client/tailwind.config.js
 client/postcss.config.js
 
