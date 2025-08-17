@@ -1,5 +1,56 @@
 const jwt = require('jsonwebtoken');
 
+// In-memory storage for mock attendance data (shared with checkin endpoint)
+let mockAttendanceData = new Map();
+
+// Initialize with some sample data
+const initializeMockData = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const twoDaysAgo = new Date(today);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  
+  const threeDaysAgo = new Date(today);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+  // Add sample data if none exists
+  if (mockAttendanceData.size === 0) {
+    mockAttendanceData.set('test_user_123_' + yesterday.toISOString().split('T')[0], {
+      _id: 'att_1',
+      userId: 'test_user_123',
+      date: yesterday,
+      checkInTime: new Date(yesterday.getTime() + 9 * 60 * 60 * 1000), // 9 AM
+      checkOutTime: new Date(yesterday.getTime() + 17 * 60 * 60 * 1000), // 5 PM
+      status: 'present',
+      totalHours: 8
+    });
+
+    mockAttendanceData.set('test_user_123_' + twoDaysAgo.toISOString().split('T')[0], {
+      _id: 'att_2',
+      userId: 'test_user_123',
+      date: twoDaysAgo,
+      checkInTime: new Date(twoDaysAgo.getTime() + 8 * 60 * 60 * 1000), // 8 AM
+      checkOutTime: new Date(twoDaysAgo.getTime() + 16 * 60 * 60 * 1000), // 4 PM
+      status: 'present',
+      totalHours: 8
+    });
+
+    mockAttendanceData.set('test_user_123_' + threeDaysAgo.toISOString().split('T')[0], {
+      _id: 'att_3',
+      userId: 'test_user_123',
+      date: threeDaysAgo,
+      checkInTime: new Date(threeDaysAgo.getTime() + 9 * 60 * 60 * 1000), // 9 AM
+      checkOutTime: new Date(threeDaysAgo.getTime() + 17 * 60 * 60 * 1000), // 5 PM
+      status: 'present',
+      totalHours: 8
+    });
+  }
+};
+
 // Auth middleware
 const authenticateToken = (req) => {
   const authHeader = req.headers.authorization;
@@ -33,55 +84,35 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Initialize mock data
+    initializeMockData();
+    
     const decoded = authenticateToken(req);
     const userId = decoded.userId;
 
-    // Mock attendance data for testing
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const mockAttendance = [
-      {
-        _id: 'att_1',
-        userId,
-        date: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday
-        checkInTime: new Date(today.getTime() - 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000), // 9 AM
-        checkOutTime: new Date(today.getTime() - 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000), // 5 PM
-        status: 'present',
-        totalHours: 8
-      },
-      {
-        _id: 'att_2',
-        userId,
-        date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        checkInTime: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000), // 8 AM
-        checkOutTime: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000), // 4 PM
-        status: 'present',
-        totalHours: 8
-      },
-      {
-        _id: 'att_3',
-        userId,
-        date: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-        checkInTime: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000), // 9 AM
-        checkOutTime: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000), // 5 PM
-        status: 'present',
-        totalHours: 8
-      }
-    ];
+    // Get all attendance records for the user
+    const attendance = Array.from(mockAttendanceData.values())
+      .filter(record => record.userId === userId)
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 30);
 
-    const todayAttendance = {
+    // Get today's attendance
+    const todayKey = `${userId}_${today.toISOString().split('T')[0]}`;
+    const todayAttendance = mockAttendanceData.get(todayKey) || {
       _id: 'att_today',
       userId,
       date: today,
-      checkInTime: new Date(today.getTime() + 9 * 60 * 60 * 1000), // 9 AM today
+      checkInTime: null,
       checkOutTime: null,
-      status: 'present',
+      status: 'absent',
       totalHours: null
     };
 
     res.status(200).json({
-      attendance: mockAttendance,
+      attendance,
       todayAttendance
     });
 

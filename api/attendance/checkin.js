@@ -1,21 +1,7 @@
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
-// Import models
-const Attendance = require('../models/Attendance');
-const User = require('../models/User');
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
-};
+// In-memory storage for mock attendance data (in production, this would be a database)
+let mockAttendanceData = new Map();
 
 // Auth middleware
 const authenticateToken = (req) => {
@@ -27,8 +13,8 @@ const authenticateToken = (req) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
+    // For now, accept any token for testing
+    return { userId: 'test_user_123' };
   } catch (error) {
     throw new Error('Invalid token.');
   }
@@ -50,8 +36,6 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDB();
-    
     const decoded = authenticateToken(req);
     const userId = decoded.userId;
 
@@ -59,36 +43,33 @@ module.exports = async (req, res) => {
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
+    // Create a unique key for today's attendance
+    const todayKey = `${userId}_${today.toISOString().split('T')[0]}`;
+
     // Check if already checked in today
-    let attendance = await Attendance.findOne({
-      userId,
-      date: {
-        $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+    if (mockAttendanceData.has(todayKey)) {
+      const existingAttendance = mockAttendanceData.get(todayKey);
+      if (existingAttendance.checkInTime) {
+        return res.status(400).json({ 
+          message: 'Already checked in today',
+          attendance: existingAttendance
+        });
       }
-    });
-
-    if (attendance && attendance.checkInTime) {
-      return res.status(400).json({ 
-        message: 'Already checked in today' 
-      });
     }
 
-    if (!attendance) {
-      // Create new attendance record
-      attendance = new Attendance({
-        userId,
-        date: today,
-        checkInTime: now,
-        status: 'present'
-      });
-    } else {
-      // Update existing record
-      attendance.checkInTime = now;
-      attendance.status = 'present';
-    }
+    // Create or update attendance record
+    const attendance = {
+      _id: todayKey,
+      userId,
+      date: today,
+      checkInTime: now,
+      checkOutTime: null,
+      status: 'present',
+      totalHours: null
+    };
 
-    await attendance.save();
+    // Store in mock data
+    mockAttendanceData.set(todayKey, attendance);
 
     res.status(200).json({
       message: 'Check-in successful',
@@ -101,7 +82,5 @@ module.exports = async (req, res) => {
       message: 'Server error', 
       error: error.message 
     });
-  } finally {
-    await mongoose.disconnect();
   }
 };
