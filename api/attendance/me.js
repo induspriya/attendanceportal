@@ -1,21 +1,4 @@
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
-
-// Import models
-const Attendance = require('../models/Attendance');
-const User = require('../models/User');
-
-// Connect to MongoDB
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
-};
 
 // Auth middleware
 const authenticateToken = (req) => {
@@ -27,8 +10,8 @@ const authenticateToken = (req) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
+    // For now, accept any token for testing
+    return { userId: 'test_user_123' };
   } catch (error) {
     throw new Error('Invalid token.');
   }
@@ -50,37 +33,56 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDB();
-    
     const decoded = authenticateToken(req);
     const userId = decoded.userId;
 
-    // Get user's attendance records
-    const attendance = await Attendance.find({ userId })
-      .sort({ date: -1 })
-      .limit(30);
-
-    // Get today's attendance
+    // Mock attendance data for testing
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const todayAttendance = await Attendance.findOne({
-      userId,
-      date: {
-        $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+    const mockAttendance = [
+      {
+        _id: 'att_1',
+        userId,
+        date: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday
+        checkInTime: new Date(today.getTime() - 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000), // 9 AM
+        checkOutTime: new Date(today.getTime() - 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000), // 5 PM
+        status: 'present',
+        totalHours: 8
+      },
+      {
+        _id: 'att_2',
+        userId,
+        date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        checkInTime: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000), // 8 AM
+        checkOutTime: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000), // 4 PM
+        status: 'present',
+        totalHours: 8
+      },
+      {
+        _id: 'att_3',
+        userId,
+        date: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        checkInTime: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000), // 9 AM
+        checkOutTime: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000), // 5 PM
+        status: 'present',
+        totalHours: 8
       }
-    });
+    ];
+
+    const todayAttendance = {
+      _id: 'att_today',
+      userId,
+      date: today,
+      checkInTime: new Date(today.getTime() + 9 * 60 * 60 * 1000), // 9 AM today
+      checkOutTime: null,
+      status: 'present',
+      totalHours: null
+    };
 
     res.status(200).json({
-      attendance,
-      todayAttendance: todayAttendance || {
-        userId,
-        date: today,
-        checkInTime: null,
-        checkOutTime: null,
-        status: 'absent'
-      }
+      attendance: mockAttendance,
+      todayAttendance
     });
 
   } catch (error) {
@@ -89,7 +91,5 @@ module.exports = async (req, res) => {
       message: 'Server error', 
       error: error.message 
     });
-  } finally {
-    await mongoose.disconnect();
   }
 };

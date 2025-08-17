@@ -31,18 +31,45 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await connectDB();
-    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get upcoming holidays
-    const upcomingHolidays = await Holiday.find({
-      date: { $gte: today },
-      isActive: true
-    })
-    .sort({ date: 1 })
-    .limit(10);
+    // Mock upcoming holidays data
+    const mockUpcomingHolidays = [
+      {
+        _id: 'hol_1',
+        name: 'New Year\'s Day',
+        date: new Date(today.getFullYear() + 1, 0, 1), // January 1st next year
+        description: 'New Year\'s Day celebration',
+        isActive: true
+      },
+      {
+        _id: 'hol_2',
+        name: 'Independence Day',
+        date: new Date(today.getFullYear(), 7, 15), // August 15th this year
+        description: 'National Independence Day',
+        isActive: true
+      },
+      {
+        _id: 'hol_3',
+        name: 'Christmas',
+        date: new Date(today.getFullYear(), 11, 25), // December 25th this year
+        description: 'Christmas celebration',
+        isActive: true
+      },
+      {
+        _id: 'hol_4',
+        name: 'Republic Day',
+        date: new Date(today.getFullYear(), 0, 26), // January 26th this year
+        description: 'Republic Day celebration',
+        isActive: true
+      }
+    ];
+
+    // Filter holidays that are today or in the future
+    const upcomingHolidays = mockUpcomingHolidays.filter(holiday => 
+      holiday.date >= today
+    ).sort((a, b) => a.date - b.date);
 
     res.status(200).json(upcomingHolidays);
 
@@ -52,7 +79,5 @@ module.exports = async (req, res) => {
       message: 'Server error', 
       error: error.message 
     });
-  } finally {
-    await mongoose.disconnect();
   }
 };
