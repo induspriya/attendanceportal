@@ -2,7 +2,6 @@
 node_modules/
 server/
 client/src/
-client/public/
 client/tailwind.config.js
 client/postcss.config.js
 
