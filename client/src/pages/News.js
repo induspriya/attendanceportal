@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Clock, Tag, User, AlertCircle, Info, Calendar } from 'lucide-react';
 import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 const News = () => {
   const [news, setNews] = useState([]);
@@ -18,7 +19,8 @@ const News = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching news...');
+      console.log('🔍 Fetching news from backend...');
+      
       const response = await api.get('/news');
       console.log('📡 API Response:', response);
       console.log('📊 Response data:', response.data);
@@ -27,6 +29,9 @@ const News = () => {
       setNews(newsData);
     } catch (error) {
       console.error('❌ Error fetching news:', error);
+      toast.error('Failed to load news from server');
+      // Set empty array instead of mock data
+      setNews([]);
     } finally {
       setLoading(false);
     }
@@ -100,49 +105,35 @@ const News = () => {
     });
   };
 
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const filteredNews = news.filter(item => {
-    // Category filter
-    if (filter !== 'all' && item.category !== filter) return false;
+    const matchesFilter = filter === 'all' || item.category === filter;
+    const matchesPriority = priorityFilter === 'all' || item.priority === priorityFilter;
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Priority filter
-    if (priorityFilter !== 'all' && item.priority !== priorityFilter) return false;
-    
-    // Search filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
-        item.title.toLowerCase().includes(searchLower) ||
-        item.summary?.toLowerCase().includes(searchLower) ||
-        item.content.toLowerCase().includes(searchLower) ||
-        item.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-      
-      if (!matchesSearch) return false;
-    }
-    
-    return true;
+    return matchesFilter && matchesPriority && matchesSearch;
   });
 
-  // Debug logging
-  console.log('📋 News state:', { 
-    newsLength: news.length, 
-    filteredLength: filteredNews.length, 
-    loading, 
-    filter, 
-    priorityFilter 
-  });
+  const handleNewsClick = (newsItem) => {
+    setSelectedNews(newsItem);
+  };
 
-  const categories = [
-    { value: 'all', label: 'All News', count: news.length },
-    { value: 'announcement', label: 'Announcements', count: news.filter(n => n.category === 'announcement').length },
-    { value: 'news', label: 'News', count: news.filter(n => n.category === 'news').length },
-    { value: 'policy', label: 'Policies', count: news.filter(n => n.category === 'policy').length },
-    { value: 'event', label: 'Events', count: news.filter(n => n.category === 'event').length },
-  ];
+  const closeModal = () => {
+    setSelectedNews(null);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -153,282 +144,214 @@ const News = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-black">News & Announcements</h1>
-          <p className="text-gray-600">Stay updated with the latest company news and important announcements</p>
+          <h1 className="text-2xl font-bold text-gray-900">Company News</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Stay updated with the latest company announcements, news, and events
+          </p>
         </div>
-        <FileText className="h-8 w-8 text-blue-600" />
+        <button
+          onClick={fetchNews}
+          className="mt-4 sm:mt-0 btn btn-outline flex items-center space-x-2"
+        >
+          <Clock className="h-4 w-4" />
+          <span>Refresh</span>
+        </button>
       </motion.div>
 
-      {/* Search and Filter Section */}
+      {/* Filters and Search */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
       >
-        <div className="flex items-center space-x-2 mb-4">
-          <Tag className="h-5 w-5 text-gray-500" />
-          <h3 className="text-lg font-medium text-black">Search & Filter News</h3>
-        </div>
-        
-        {/* Search Bar */}
-        <div className="mb-4">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
             <input
               type="text"
-              placeholder="Search news by title, content, or tags..."
+              placeholder="Search news..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input w-full"
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
           </div>
-        </div>
-
-        {/* Category and Priority Filters */}
-        <div className="space-y-3">
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Categories</h4>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category.value}
-                  onClick={() => setFilter(category.value)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    filter === category.value
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {category.label} ({category.count})
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Priority</h4>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: 'all', label: 'All Priorities', count: news.length },
-                { value: 'urgent', label: 'Urgent', count: news.filter(n => n.priority === 'urgent').length },
-                { value: 'high', label: 'High', count: news.filter(n => n.priority === 'high').length },
-                { value: 'medium', label: 'Medium', count: news.filter(n => n.priority === 'medium').length },
-                { value: 'low', label: 'Low', count: news.filter(n => n.priority === 'low').length },
-              ].map((priority) => (
-                <button
-                  key={priority.value}
-                  onClick={() => setPriorityFilter(priority.value)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    priorityFilter === priority.value
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {priority.label} ({priority.count})
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Results Count */}
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            Showing {filteredNews.length} of {news.length} news items
-          </p>
-          {/* Debug Info */}
-          <div className="mt-2 p-2 bg-yellow-100 rounded text-xs text-yellow-800 border border-yellow-300">
-            <p><strong>Debug Info:</strong></p>
-            <p>News array length: {news.length}</p>
-            <p>Filtered news length: {filteredNews.length}</p>
-            <p>Loading: {loading.toString()}</p>
-            <p>Filter: {filter}, Priority: {priorityFilter}</p>
-          </div>
+          
+          {/* Category Filter */}
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="input"
+          >
+            <option value="all">All Categories</option>
+            <option value="announcement">Announcements</option>
+            <option value="news">News</option>
+            <option value="policy">Policies</option>
+            <option value="event">Events</option>
+          </select>
+          
+          {/* Priority Filter */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="input"
+          >
+            <option value="all">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
         </div>
       </motion.div>
 
-      {/* Loading State */}
-      {loading ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-center py-12"
-        >
-          <div className="max-w-md mx-auto">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading news...</h3>
-            <p className="text-gray-500">Please wait while we fetch the latest updates.</p>
-          </div>
-        </motion.div>
-      ) : filteredNews.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {filteredNews.map((item) => (
+      {/* News Grid */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {filteredNews.map((item) => (
           <motion.div
-            key={item._id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 cursor-pointer"
-            onClick={() => setSelectedNews(item)}
+            key={item.id}
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleNewsClick(item)}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                {getCategoryIcon(item.category)}
-                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(item.category)}`}>
-                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+            {/* Priority Badge */}
+            <div className="p-4 pb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(item.priority)}`}>
+                  {getPriorityIcon(item.priority)}
+                  <span className="ml-1 capitalize">{item.priority}</span>
+                </span>
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(item.category)}`}>
+                  {getCategoryIcon(item.category)}
+                  <span className="ml-1 capitalize">{item.category}</span>
                 </span>
               </div>
-              <div className="flex items-center space-x-1">
-                {getPriorityIcon(item.priority)}
-                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(item.priority)}`}>
-                  {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
-                </span>
-              </div>
-            </div>
-
-            <h3 className="text-lg font-semibold text-black mb-2 line-clamp-2">
-              {item.title}
-            </h3>
-            
-            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-              {item.summary || item.content.substring(0, 120) + '...'}
-            </p>
-
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center space-x-1">
-                <Clock className="h-3 w-3" />
-                <span>{formatDate(item.publishedAt)}</span>
-              </div>
-              {item.createdBy && (
-                <div className="flex items-center space-x-1">
-                  <User className="h-3 w-3" />
-                  <span>{item.createdBy.name || 'Admin'}</span>
-                </div>
-              )}
-            </div>
-
-            {item.tags && item.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
+              
+              {/* Title */}
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                {item.title}
+              </h3>
+              
+              {/* Content Preview */}
+              <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+                {item.content}
+              </p>
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1 mb-3">
                 {item.tags.slice(0, 3).map((tag, index) => (
-                  <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                    #{tag}
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag}
                   </span>
                 ))}
+                {item.tags.length > 3 && (
+                  <span className="text-xs text-gray-500">+{item.tags.length - 3} more</span>
+                )}
               </div>
-            )}
+              
+              {/* Footer */}
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center">
+                  <User className="h-3 w-3 mr-1" />
+                  {item.createdBy.name}
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {formatDate(item.publishedAt)}
+                </div>
+              </div>
+            </div>
           </motion.div>
         ))}
-        </motion.div>
-      ) : (
+      </motion.div>
+
+      {/* No Results */}
+      {filteredNews.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
           className="text-center py-12"
         >
-          <div className="max-w-md mx-auto">
-            <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No news found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || filter !== 'all' || priorityFilter !== 'all'
-                ? 'Try adjusting your search or filters to find what you\'re looking for.'
-                : 'There are no news items available at the moment.'}
-            </p>
-            {(searchTerm || filter !== 'all' || priorityFilter !== 'all') && (
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setFilter('all');
-                  setPriorityFilter('all');
-                }}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No news found</h3>
+          <p className="text-gray-500">Try adjusting your search or filters</p>
         </motion.div>
       )}
 
       {/* News Detail Modal */}
       {selectedNews && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedNews(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  {getCategoryIcon(selectedNews.category)}
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(selectedNews.category)}`}>
-                    {selectedNews.category.charAt(0).toUpperCase() + selectedNews.category.slice(1)}
-                  </span>
-                </div>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">{selectedNews.title}</h3>
                 <button
-                  onClick={() => setSelectedNews(null)}
+                  onClick={closeModal}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  ✕
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
-
-              <h2 className="text-xl font-bold text-black mb-4">
-                {selectedNews.title}
-              </h2>
-
-              <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                <div className="flex items-center space-x-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{formatDate(selectedNews.publishedAt)}</span>
-                </div>
-                <div className="flex items-center space-x-1">
+              
+              {/* Priority and Category */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(selectedNews.priority)}`}>
                   {getPriorityIcon(selectedNews.priority)}
-                  <span>{selectedNews.priority.charAt(0).toUpperCase() + selectedNews.priority.slice(1)} Priority</span>
-                </div>
+                  <span className="ml-1 capitalize">{selectedNews.priority}</span>
+                </span>
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(selectedNews.category)}`}>
+                  {getCategoryIcon(selectedNews.category)}
+                  <span className="ml-1 capitalize">{selectedNews.category}</span>
+                </span>
               </div>
-
-              <div className="prose prose-sm max-w-none text-gray-700 mb-4">
-                {selectedNews.content.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-3">
-                    {paragraph}
-                  </p>
+              
+              {/* Content */}
+              <div className="text-gray-700 mb-4">
+                {selectedNews.content}
+              </div>
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedNews.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag}
+                  </span>
                 ))}
               </div>
-
-              {selectedNews.tags && selectedNews.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedNews.tags.map((tag, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                      #{tag}
-                    </span>
-                  ))}
+              
+              {/* Footer */}
+              <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-4">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  Published by {selectedNews.createdBy.name}
                 </div>
-              )}
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2" />
+                  {formatDate(selectedNews.publishedAt)} at {formatTime(selectedNews.publishedAt)}
+                </div>
+              </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

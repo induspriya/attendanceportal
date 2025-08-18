@@ -75,8 +75,20 @@ api.interceptors.request.use(
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ API Response:', response.config.url, response.status);
+    return response;
+  },
   (error) => {
+    console.error('❌ API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('token');

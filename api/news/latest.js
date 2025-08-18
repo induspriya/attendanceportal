@@ -1,5 +1,4 @@
-// Mock data endpoint - no database connection needed
-
+// News API endpoint - Mock data only for Vercel deployment
 module.exports = async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,6 +15,8 @@ module.exports = async (req, res) => {
   }
 
   try {
+    console.log('Latest news API called successfully');
+    
     const limit = parseInt(req.query.limit) || 5;
 
     // Mock latest news data
@@ -24,8 +25,8 @@ module.exports = async (req, res) => {
         _id: 'news_1',
         title: 'Company Annual Meeting Announced',
         content: 'The annual company meeting will be held on December 15th. All employees are invited to attend.',
-        author: 'HR Department',
-        category: 'Company Updates',
+        createdBy: { name: 'HR Department' },
+        category: 'announcement',
         isPublished: true,
         publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
         tags: ['meeting', 'annual', 'company']
@@ -34,8 +35,8 @@ module.exports = async (req, res) => {
         _id: 'news_2',
         title: 'New Employee Benefits Package',
         content: 'We are excited to announce enhanced employee benefits including improved health coverage and flexible working hours.',
-        author: 'Benefits Team',
-        category: 'Benefits',
+        createdBy: { name: 'Benefits Team' },
+        category: 'policy',
         isPublished: true,
         publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
         tags: ['benefits', 'health', 'flexible']
@@ -44,43 +45,20 @@ module.exports = async (req, res) => {
         _id: 'news_3',
         title: 'Office Renovation Complete',
         content: 'The office renovation has been completed successfully. New facilities include a modern break room and improved workspace.',
-        author: 'Facilities Team',
-        category: 'Office Updates',
+        createdBy: { name: 'Facilities Team' },
+        category: 'announcement',
         isPublished: true,
         publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
         tags: ['renovation', 'facilities', 'workspace']
-      },
-      {
-        _id: 'news_4',
-        title: 'Team Building Event',
-        content: 'Join us for our monthly team building event this Friday. Activities include team games and dinner.',
-        author: 'Culture Team',
-        category: 'Events',
-        isPublished: true,
-        publishedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-        tags: ['team building', 'events', 'culture']
-      },
-      {
-        _id: 'news_5',
-        title: 'Technology Upgrade',
-        content: 'We are upgrading our technology infrastructure to improve productivity and security.',
-        author: 'IT Department',
-        category: 'Technology',
-        isPublished: true,
-        publishedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000), // 12 days ago
-        tags: ['technology', 'upgrade', 'security']
       }
     ];
 
-    // Sort by published date (newest first) and limit results
-    const latestNews = mockLatestNews
-      .sort((a, b) => b.publishedAt - a.publishedAt)
-      .slice(0, limit);
+    // Limit the results
+    const limitedNews = mockLatestNews.slice(0, limit);
 
-    res.status(200).json(latestNews);
-
+    res.json(limitedNews);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in latest news API:', error);
     res.status(500).json({ 
       message: 'Server error', 
       error: error.message 

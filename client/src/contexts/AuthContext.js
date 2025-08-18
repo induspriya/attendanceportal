@@ -81,6 +81,24 @@ export const AuthProvider = ({ children }) => {
       role: 'hr',
       department: 'Human Resources',
       position: 'HR Manager'
+    },
+    {
+      id: '5',
+      name: 'Test Employee',
+      email: 'test@example.com',
+      password: 'test123',
+      role: 'employee',
+      department: 'Testing',
+      position: 'QA Engineer'
+    },
+    {
+      id: '6',
+      name: 'Demo User',
+      email: 'demo@example.com',
+      password: 'demo123',
+      role: 'employee',
+      department: 'Demo',
+      position: 'Demo User'
     }
   ], []);
 
@@ -107,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     hasInitialized.current = true;
     
     // Simple development bypass without async operations
-    if (true || process.env.NODE_ENV === 'development') {
+    if (false && process.env.NODE_ENV === 'development') {
       console.log('AuthContext: Development mode - setting default user for testing');
       
       // Set all state in one synchronous operation
@@ -226,70 +244,68 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Prevent multiple simultaneous login attempts
-      if (loading) return { success: false, error: 'Login already in progress' };
+      console.log('=== AUTH CONTEXT LOGIN START ===');
+      console.log('AuthContext: Making login request...');
+      console.log('AuthContext: Login credentials - email:', email, 'password:', password);
       
-      setLoading(true);
-      setError(null);
-      
-      // TEMPORARY DEVELOPMENT BYPASS - Remove this in production
-      if (true || process.env.NODE_ENV === 'development') { // Force development mode for now
-        console.log('AuthContext: Development mode login bypass');
-        const devUser = {
-          id: 'dev_user',
-          name: 'Development User',
-          email: 'dev@test.com',
-          role: 'employee',
-          department: 'Development',
-          position: 'Developer'
-        };
-        const mockToken = 'dev_mock_token_' + Date.now();
+      // Try real API first
+      try {
+        const response = await api.post('/api/auth/login', { email, password });
+        console.log('AuthContext: Login response:', response.data);
         
-        localStorage.setItem('token', mockToken);
-        api.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`;
+        const { token: newToken, user: userData } = response.data;
         
-        if (isMounted) {
-          setUser(devUser);
+        console.log('AuthContext: Setting token and user...');
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(userData);
+        
+        console.log('AuthContext: Login successful, user state updated');
+        console.log('AuthContext: New token:', newToken);
+        console.log('AuthContext: New user:', userData);
+        toast.success('Login successful!');
+        return { success: true };
+      } catch (apiError) {
+        console.log('API login failed, using mock authentication:', apiError.message);
+        
+        // Fallback to mock authentication
+        console.log('AuthContext: Searching for mock user...');
+        console.log('AuthContext: Available mock users:', mockUsers.map(u => ({ email: u.email, role: u.role })));
+        
+        const mockUser = mockUsers.find(u => u.email === email && u.password === password);
+        console.log('AuthContext: Mock user search result:', mockUser);
+        
+        if (mockUser) {
+          const { password: _, ...userData } = mockUser;
+          // Generate a proper JWT-like token for mock users
+          const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI${mockUser.id}iLCJlbWFpbCI6Ii${mockUser.email}Iiwicm9sZSI6Ii${mockUser.role}IiwiaWF0IjoxNzM0NzI4MDAwLCJleHAiOjE3MzQ4MTQ0MDB9.mock_signature_${mockUser.id}`;
+          
+          console.log('AuthContext: Mock user found:', userData);
+          console.log('AuthContext: Setting mock token:', mockToken);
+          console.log('AuthContext: User role:', userData.role);
+          
+          localStorage.setItem('token', mockToken);
           setToken(mockToken);
-          setIsAuthenticated(true);
-          setLoading(false);
+          setUser(userData);
+          
+          console.log('AuthContext: Mock login successful, user state updated');
+          console.log('AuthContext: Mock token set:', mockToken);
+          console.log('AuthContext: Mock user set:', userData);
+          toast.success('Login successful! (Mock Mode)');
+          return { success: true };
+        } else {
+          console.log('AuthContext: No mock user found for credentials');
+          toast.error('Invalid email or password');
+          return { success: false, error: 'Invalid email or password' };
         }
-        
-        return { success: true, user: devUser };
-      }
-
-      // Base URL is already configured in axios instance
-      const response = await api.post('/auth/login', { email, password });
-      
-      if (response.data.token) {
-        const token = response.data.token;
-        localStorage.setItem('token', token);
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        if (isMounted) {
-          setUser(response.data.user);
-          setToken(token);
-          setIsAuthenticated(true);
-        }
-        
-        return { success: true, user: response.data.user };
-      } else {
-        if (isMounted) {
-          setError('Login failed');
-        }
-        return { success: false, error: 'Login failed' };
       }
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      if (isMounted) {
-        setError(errorMessage);
-      }
-      return { success: false, error: errorMessage };
+      console.error('AuthContext: Login error:', error);
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+      return { success: false, error: message };
     } finally {
-      if (isMounted) {
-        setLoading(false);
-      }
+      console.log('=== AUTH CONTEXT LOGIN END ===');
     }
   };
 

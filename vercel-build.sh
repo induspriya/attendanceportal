@@ -9,6 +9,10 @@ npm install
 npm run build
 cd ..
 
+# Copy static files to root of build directory for Vercel
+echo "📁 Copying static files for Vercel..."
+cp -r client/build/static/* client/build/
+
 # Install server dependencies
 cd server
 npm install

@@ -1,34 +1,4 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/logo.svg"
-    },
-    {
-      "src": "/logo.svg",
-      "dest": "/logo.svg"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/robots.txt",
-      "dest": "/robots.txt"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "outputDirectory": "client/build"
 } 

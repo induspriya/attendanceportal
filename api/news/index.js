@@ -1,22 +1,22 @@
-const axios = require('axios');
+module.exports = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Call the backend server
-    const backendUrl = process.env.BACKEND_URL || 'https://your-backend-server.com';
-    const response = await axios.get(`${backendUrl}/api/news`, {
-      params: req.query
-    });
+    console.log('News API called successfully');
     
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    
-    // Fallback to mock data if backend is not available
+    // Mock news data
     const mockNews = {
       news: [
         {
@@ -59,5 +59,13 @@ export default async function handler(req, res) {
     };
 
     res.status(200).json(mockNews);
+  } catch (error) {
+    console.error('Error in news API:', error);
+    res.status(500).json({ 
+      error: {
+        code: '500',
+        message: 'A server error has occurred'
+      }
+    });
   }
-}
+};
