@@ -15,6 +15,10 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/vercel-api-test",
+      "dest": "/vercel-api-test.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/$1"
     }
