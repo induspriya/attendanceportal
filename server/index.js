@@ -29,6 +29,7 @@ const corsOptions = {
             'https://attendance-portal-fd2h8q3mn-induspriyas-projects.vercel.app',
             'https://attendance-portal-rmcxcn8dj-induspriyas-projects.vercel.app',
             'https://attendance-portal.vercel.app',
+            'https://attendance-portal-i1vjrxakc-induspriyas-projects.vercel.app',
             /^https:\/\/attendance-portal-.*-induspriyas-projects\.vercel\.app$/
           ];
       
