@@ -11,6 +11,22 @@
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/client/static/$1"
+    },
+    {
+      "src": "/logo.svg",
+      "dest": "/client/logo.svg"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/client/manifest.json"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/client/robots.txt"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
@@ -18,9 +34,5 @@
       "src": "/(.*)",
       "dest": "/client/$1"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret"
-  }
+  ]
 } 

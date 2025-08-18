@@ -4,22 +4,14 @@
   "description": "A comprehensive attendance management system",
   "main": "index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "cd client && npm run build",
+    "start": "cd client && npm start",
+    "dev": "cd client && npm start"
   },
   "dependencies": {
-    "mongodb": "^6.3.0",
-    "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
-    "next": "^14.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  },
-  "devDependencies": {
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0"
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.18.0"
   },
   "keywords": [
     "attendance",
