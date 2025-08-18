@@ -1,166 +1,89 @@
-const jwt = require('jsonwebtoken');
+import { MongoClient, ObjectId } from 'mongodb';
+import jwt from 'jsonwebtoken';
 
-// In-memory storage for mock attendance data
-let mockAttendanceData = new Map();
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 
-// Initialize with some sample data
-const initializeMockData = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  const twoDaysAgo = new Date(today);
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-  
-  const threeDaysAgo = new Date(today);
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-
-  // Add sample data if none exists
-  if (mockAttendanceData.size === 0) {
-    mockAttendanceData.set('test_user_123_' + yesterday.toISOString().split('T')[0], {
-      _id: 'att_1',
-      userId: 'test_user_123',
-      date: yesterday,
-      checkInTime: new Date(yesterday.getTime() + 9 * 60 * 60 * 1000), // 9 AM
-      checkOutTime: new Date(yesterday.getTime() + 17 * 60 * 60 * 1000), // 5 PM
-      status: 'present',
-      totalHours: 8
-    });
-
-    mockAttendanceData.set('test_user_123_' + twoDaysAgo.toISOString().split('T')[0], {
-      _id: 'att_2',
-      userId: 'test_user_123',
-      date: twoDaysAgo,
-      checkInTime: new Date(twoDaysAgo.getTime() + 8 * 60 * 60 * 1000), // 8 AM
-      checkOutTime: new Date(twoDaysAgo.getTime() + 16 * 60 * 60 * 1000), // 4 PM
-      status: 'present',
-      totalHours: 8
-    });
-
-    mockAttendanceData.set('test_user_123_' + threeDaysAgo.toISOString().split('T')[0], {
-      _id: 'att_3',
-      userId: 'test_user_123',
-      date: threeDaysAgo,
-      checkInTime: new Date(threeDaysAgo.getTime() + 9 * 60 * 60 * 1000), // 9 AM
-      checkOutTime: new Date(threeDaysAgo.getTime() + 17 * 60 * 60 * 1000), // 5 PM
-      status: 'present',
-      totalHours: 8
-    });
-  }
-};
-
-// Auth middleware
-const authenticateToken = (req) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    throw new Error('Access denied. No token provided.');
-  }
-  
-  try {
-    // For now, accept any token for testing
-    return { userId: 'test_user_123' };
-  } catch (error) {
-    throw new Error('Invalid token.');
-  }
-};
-
-// Handle check-in functionality
-const handleCheckIn = (userId, today) => {
-  const todayKey = `${userId}_${today.toISOString().split('T')[0]}`;
-  
-  // Check if already checked in today
-  if (mockAttendanceData.has(todayKey)) {
-    const existingAttendance = mockAttendanceData.get(todayKey);
-    if (existingAttendance.checkInTime) {
-      return existingAttendance; // Already checked in
-    }
-  }
-
-  // Create new attendance record
-  const now = new Date();
-  const attendance = {
-    _id: todayKey,
-    userId,
-    date: today,
-    checkInTime: now,
-    checkOutTime: null,
-    status: 'present',
-    totalHours: null
-  };
-
-  // Store in mock data
-  mockAttendanceData.set(todayKey, attendance);
-  return attendance;
-};
-
-module.exports = async (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
+export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    // Initialize mock data
-    initializeMockData();
-    
-    const decoded = authenticateToken(req);
-    const userId = decoded.userId;
+    const { month, year } = req.query;
+    const authHeader = req.headers.authorization;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Handle check-in if requested via query parameter
-    if (req.query.action === 'checkin') {
-      const todayAttendance = handleCheckIn(userId, today);
-      if (todayAttendance.checkInTime) {
-        return res.status(200).json({
-          message: 'Check-in successful',
-          attendance: todayAttendance
-        });
-      }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
     }
-    
-    // Get all attendance records for the user
-    const attendance = Array.from(mockAttendanceData.values())
-      .filter(record => record.userId === userId)
-      .sort((a, b) => b.date - a.date)
-      .slice(0, 30);
 
-    // Get today's attendance
-    const todayKey = `${userId}_${today.toISOString().split('T')[0]}`;
-    const todayAttendance = mockAttendanceData.get(todayKey) || {
-      _id: 'att_today',
-      userId,
-      date: today,
-      checkInTime: null,
-      checkOutTime: null,
-      status: 'absent',
-      totalHours: null
-    };
+    const token = authHeader.substring(7);
+
+    // Verify JWT token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    const userId = decoded.userId;
+    const currentMonth = month ? parseInt(month) : new Date().getMonth() + 1;
+    const currentYear = year ? parseInt(year) : new Date().getFullYear();
+
+    // Connect to MongoDB
+    const client = await MongoClient.connect(MONGODB_URI);
+    const db = client.db();
+    const attendanceCollection = db.collection('attendance');
+
+    // Get attendance records for the specified month and year
+    const startDate = new Date(currentYear, currentMonth - 1, 1);
+    const endDate = new Date(currentYear, currentMonth, 0, 23, 59, 59);
+
+    const attendanceRecords = await attendanceCollection
+      .find({
+        user: new ObjectId(userId),
+        date: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      })
+      .sort({ date: 1 })
+      .toArray();
+
+    await client.close();
+
+    // Calculate summary statistics
+    const presentDays = attendanceRecords.filter(record => 
+      record.status === 'present' || record.status === 'checked_in' || record.status === 'checked_out'
+    ).length;
+    
+    const absentDays = new Date(currentYear, currentMonth, 0).getDate() - presentDays;
+    
+    const totalWorkingHours = attendanceRecords.reduce((total, record) => {
+      if (record.checkIn && record.checkOut) {
+        const hours = (new Date(record.checkOut.time) - new Date(record.checkIn.time)) / (1000 * 60 * 60);
+        return total + hours;
+      }
+      return total;
+    }, 0);
+    
+    const averageWorkingHours = presentDays > 0 ? totalWorkingHours / presentDays : 0;
 
     res.status(200).json({
-      attendance,
-      todayAttendance
+      message: 'Attendance data fetched successfully',
+      attendance: attendanceRecords,
+      summary: {
+        presentDays,
+        absentDays,
+        totalWorkingHours,
+        averageWorkingHours,
+        totalDays: new Date(currentYear, currentMonth, 0).getDate()
+      }
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ 
-      message: 'Server error', 
-      error: error.message 
-    });
+    console.error('Attendance fetch error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-};
+}

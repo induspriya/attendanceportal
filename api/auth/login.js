@@ -1,31 +1,11 @@
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { connectDB } = require('../../server/utils/db');
+import { MongoClient } from 'mongodb';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-// Import User model
-const User = require('../../server/models/User');
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 
-// Generate JWT Token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
-};
-
-module.exports = async (req, res) => {
-  // Set CORS headers for Vercel deployment
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  // Handle preflight request
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  // Only allow POST method
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -33,66 +13,61 @@ module.exports = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
     // Connect to MongoDB
-    await connectDB();
+    const client = await MongoClient.connect(MONGODB_URI);
+    const db = client.db();
+    const usersCollection = db.collection('users');
 
     // Find user by email
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await usersCollection.findOne({ email: email.toLowerCase() });
+
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      await client.close();
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check if user is active
     if (!user.isActive) {
+      await client.close();
       return res.status(401).json({ message: 'Account is deactivated' });
     }
 
     // Verify password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      await client.close();
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Generate JWT token
-    const token = generateToken(user._id);
+    const token = jwt.sign(
+      { 
+        userId: user._id.toString(), 
+        email: user.email, 
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    await client.close();
 
-    // Return user data and token
+    // Return user data (without password) and token
+    const { password: _, ...userWithoutPassword } = user;
+    
     res.status(200).json({
       message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        department: user.department,
-        position: user.position
-      }
+      user: userWithoutPassword,
+      token
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    
-    // Check if it's a MongoDB connection error
-    if (error.name === 'MongoNetworkError' || error.name === 'MongoServerSelectionError') {
-      return res.status(500).json({ 
-        message: 'Database connection failed. Please try again later.',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-    
-    res.status(500).json({ 
-      message: 'Server error during login',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ message: 'Internal server error' });
   }
-};
+}

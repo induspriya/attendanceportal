@@ -11,23 +11,23 @@ export default async function handler(req, res) {
     // Connect to MongoDB
     const client = await MongoClient.connect(MONGODB_URI);
     const db = client.db();
-    const newsCollection = db.collection('news');
+    const holidaysCollection = db.collection('holidays');
 
-    // Get all published news
-    const news = await newsCollection
-      .find({ isPublished: true })
-      .sort({ publishedAt: -1 })
+    // Get all holidays
+    const holidays = await holidaysCollection
+      .find({})
+      .sort({ date: 1 })
       .toArray();
 
     await client.close();
 
     res.status(200).json({
-      message: 'News fetched successfully',
-      news: news
+      message: 'Holidays fetched successfully',
+      holidays: holidays
     });
 
   } catch (error) {
-    console.error('News fetch error:', error);
+    console.error('Holidays fetch error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

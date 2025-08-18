@@ -1,22 +1,33 @@
 {
   "name": "attendance-portal",
   "version": "1.0.0",
-  "description": "Full-stack Attendance Portal with React frontend and Node.js backend",
+  "description": "A comprehensive attendance management system",
+  "main": "index.js",
   "scripts": {
-    "build": "cd client && npm install && npm run build",
-    "build:client": "cd client && npm install && npm run build",
-    "build:server": "cd server && npm install",
-    "start": "cd server && npm start",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm start",
-    "install-all": "echo 'Skipping install-all for Vercel deployment'",
-    "vercel-build": "echo 'Using pre-built client/build directory'"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "keywords": [
+    "attendance",
+    "management",
+    "portal",
+    "vercel",
+    "api"
+  ],
+  "author": "Induspriya",
+  "license": "MIT"
 }
